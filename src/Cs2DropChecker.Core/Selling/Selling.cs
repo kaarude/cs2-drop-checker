@@ -1,3 +1,4 @@
+using Cs2DropChecker.Core.Market;
 using Cs2DropChecker.Core.Pricing;
 
 namespace Cs2DropChecker.Core.Selling;
@@ -6,6 +7,7 @@ namespace Cs2DropChecker.Core.Selling;
 /// Seller fees per marketplace, in one place. Checked against each site's own documentation on 2026-10-25:
 /// Steam Support "Community Market FAQ" (help.steampowered.com/en/faqs/view/61F0-72B7-9A18-C70B) and
 /// Skinport "What is the sales fee?" (skinport.com/faq/sales-fee) plus its "Lower Fees for Everybody" post.
+/// The Steam values are also the defaults of <see cref="WalletInfo"/>, which the sell window replaces with the account's own.
 /// </summary>
 public static class SellFees
 {
@@ -54,26 +56,18 @@ public sealed record SellAdvice(IReadOnlyList<SellOption> Options, SellOption? B
 
 public static class SellCalculator
 {
+    private static readonly WalletInfo DefaultWallet = new();
+
     /// <summary>
-    /// What the seller receives when a buyer pays <paramref name="buyerPrice"/> on the Steam Market. Steam adds both fees on
-    /// top of the seller's amount and rounds each one down to the cent with a one cent minimum, like the market's sell dialog.
+    /// What the seller receives when a buyer pays <paramref name="buyerPrice"/> on the Steam Market, using the same fee
+    /// calculation as the sell window (Steam's own, both fees on top of the seller's amount, one cent minimum each).
     /// </summary>
     public static decimal SteamNet(decimal buyerPrice)
     {
         var paid = (long)Math.Floor(buyerPrice * 100m);
         if (paid < 3) return 0;
-        var receive = (long)Math.Floor(paid / (1m + SellFees.SteamTransactionFee + SellFees.SteamGameFee));
-        while (receive > 1 && BuyerPays(receive) > paid) receive--;
-        while (BuyerPays(receive + 1) <= paid) receive++;
-        return receive / 100m;
-    }
-
-    private static long BuyerPays(long receiveCents)
-    {
-        var min = (long)(SellFees.SteamMinimumFee * 100m);
-        var steam = Math.Max(min, (long)Math.Floor(receiveCents * SellFees.SteamTransactionFee));
-        var game = Math.Max(min, (long)Math.Floor(receiveCents * SellFees.SteamGameFee));
-        return receiveCents + steam + game;
+        var fee = MarketFees.ForBuyerPrice(paid, DefaultWallet);
+        return fee.IsValid ? MarketFees.FromCents(fee.Receive) : 0;
     }
 
     /// <summary>Skinport's fee is taken from the sale price and rounded up to the cent.</summary>
