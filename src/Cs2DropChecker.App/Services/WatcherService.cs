@@ -2,6 +2,7 @@ using Cs2DropChecker.Core.Detection;
 using Cs2DropChecker.Core.Market;
 using Cs2DropChecker.Core.Models;
 using Cs2DropChecker.Core.Pricing;
+using Cs2DropChecker.Core.Profit;
 using Cs2DropChecker.Core.Settings;
 using Cs2DropChecker.Core.Steam;
 using Cs2DropChecker.Core.Valuation;
@@ -62,6 +63,8 @@ public sealed class WatcherService : IDisposable
     public event EventHandler<DropPricedEventArgs>? DropPriced;
     public event EventHandler<SellableEventArgs>? NowSellable;
     public event EventHandler? SessionExpired;
+    /// <summary>A case opening got its cost (case and key price).</summary>
+    public event EventHandler? OpeningsChanged;
 
     public void Start()
     {
@@ -316,6 +319,7 @@ public sealed class WatcherService : IDisposable
         _suspicious = 0;
 
         var added = new List<DropRecord>();
+        var containers = new Dictionary<long, InventoryItem?>();
         var showCards = false;
         List<InventoryItem> sellable = [];
         if (prev is not null)
@@ -340,6 +344,20 @@ public sealed class WatcherService : IDisposable
                 {
                     var rowId = _s.Db.AddDrop(rec);
                     if (rowId > 0) added.Add(rec with { Id = rowId });
+                    if (rowId > 0 && ArrivalKindText.IsOpening(a.Kind))
+                    {
+                        containers[rowId] = a.Source;
+                        _s.Db.AddCaseOpening(new CaseOpening
+                        {
+                            DropId = rowId,
+                            SteamId = snap.SteamId,
+                            OpenedAt = snap.TakenAt,
+                            Kind = a.Kind,
+                            ContainerName = a.Source?.Name,
+                            ContainerHashName = a.Source?.MarketHashName,
+                            Item = a.Item,
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -369,14 +387,15 @@ public sealed class WatcherService : IDisposable
         if (added.Count > 0)
         {
             Ui(() => DropsAdded?.Invoke(this, new DropsAddedEventArgs(added, showCards)));
-            _ = Task.Run(() => PriceDropsAsync(added, ct), ct);
+            _ = Task.Run(() => PriceDropsAsync(added, containers, ct), ct);
         }
         if (sellable.Count > 0) Ui(() => NowSellable?.Invoke(this, new SellableEventArgs(sellable)));
         _ = Task.Run(() => _s.Market.OnSnapshotAsync(snap, ct), ct);
     }
 
-    private async Task PriceDropsAsync(IReadOnlyList<DropRecord> drops, CancellationToken ct)
+    private async Task PriceDropsAsync(IReadOnlyList<DropRecord> drops, IReadOnlyDictionary<long, InventoryItem?> containers, CancellationToken ct)
     {
+        var openings = false;
         foreach (var d in drops)
         {
             PriceQuote? q = null;
@@ -390,9 +409,34 @@ public sealed class WatcherService : IDisposable
             }
             var quote = q;
             Ui(() => DropPriced?.Invoke(this, new DropPricedEventArgs(d.Id, quote)));
+            if (containers.TryGetValue(d.Id, out var container))
+            {
+                await PriceOpeningAsync(d, container, ct);
+                openings = true;
+            }
         }
+        if (openings) Ui(() => OpeningsChanged?.Invoke(this, EventArgs.Empty));
         RecomputeValue(recordPoint: false, force: false);
         Ui(() => InventoryChanged?.Invoke(this, EventArgs.Empty));
+    }
+
+    /// <summary>Records what an opening cost: the case at its current price plus a key for weapon cases.</summary>
+    private async Task PriceOpeningAsync(DropRecord d, InventoryItem? container, CancellationToken ct)
+    {
+        var currency = _s.Settings.Currency;
+        decimal? casePrice = null;
+        if (container is not null)
+        {
+            PriceQuote? q = null;
+            try { q = await _s.Prices.GetForDropAsync(container.MarketHashName, ct); }
+            catch (OperationCanceledException) { return; }
+            catch (Exception ex) { _log.LogInformation("Case price failed: {Message}", ex.Message); }
+            q ??= _s.Prices.GetCached(container.MarketHashName);
+            if (q?.Currency == currency) casePrice = q.Price;
+        }
+        var key = KeyPrices.NeedsKey(d.Kind) ? _s.KeyPriceIn(currency) : null;
+        try { _s.Db.UpdateOpeningCost(d.Id, null, null, casePrice, key, currency); }
+        catch (Exception ex) { _log.LogWarning("Could not save the case cost: {Message}", ex.Message); }
     }
 
     public void RecomputeValue(bool recordPoint, bool force)

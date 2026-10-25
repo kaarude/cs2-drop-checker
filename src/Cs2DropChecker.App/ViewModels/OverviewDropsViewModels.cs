@@ -31,6 +31,33 @@ public sealed partial class OverviewViewModel(AppServices s) : ObservableObject
     [ObservableProperty] private string _range = "30D";
     [ObservableProperty] private int _totalDrops;
     [ObservableProperty] private string _viewAllText = "View all";
+    [ObservableProperty] private string _profitHeadline = "No priced openings yet";
+    [ObservableProperty] private string _profitTrend = "";
+    [ObservableProperty] private string _profitSub = "";
+    [ObservableProperty] private string _profitWeek = "—";
+    [ObservableProperty] private string _profitWeekTrend = "";
+    [ObservableProperty] private string _profitMonth = "—";
+    [ObservableProperty] private string _profitMonthTrend = "";
+    [ObservableProperty] private string _profitRoi = "—";
+    [ObservableProperty] private string _profitRoiTrend = "";
+    [ObservableProperty] private bool _hasOpenings;
+
+    public void ReloadProfit()
+    {
+        var f = ProfitFigures.Load(s);
+        var life = f.Lifetime;
+        HasOpenings = f.Openings.Count > 0;
+        ProfitHeadline = f.Headline;
+        ProfitTrend = life.Counted == 0 ? "" : ProfitFigures.Trend(life.Net);
+        ProfitSub = f.Openings.Count == 0 ? "Case and capsule openings are costed with the case and key price at the time"
+            : $"Lifetime · {life.Counted} of {life.Openings} openings priced";
+        ProfitWeek = f.Signed(f.Week);
+        ProfitWeekTrend = f.Week.Counted == 0 ? "" : ProfitFigures.Trend(f.Week.Net);
+        ProfitMonth = f.Signed(f.Month);
+        ProfitMonthTrend = f.Month.Counted == 0 ? "" : ProfitFigures.Trend(f.Month.Net);
+        ProfitRoi = f.Roi;
+        ProfitRoiTrend = life.RoiPercent is { } r ? ProfitFigures.Trend(r) : "";
+    }
 
     public ObservableCollection<DropRowViewModel> Recent { get; } = new();
 
@@ -53,6 +80,7 @@ public sealed partial class OverviewViewModel(AppServices s) : ObservableObject
             BestStar = false;
             RefreshValue();
             ReloadChart();
+            ReloadProfit();
             return;
         }
         try { _drops = s.Db.GetDrops(id, 50000); }
@@ -90,6 +118,7 @@ public sealed partial class OverviewViewModel(AppServices s) : ObservableObject
         foreach (var d in _drops.Take(8)) Recent.Add(new DropRowViewModel(d, s.Prices.GetCached(d.Item.MarketHashName)));
         RefreshValue();
         ReloadChart();
+        ReloadProfit();
     }
 
     private static decimal SumAtDrop(IEnumerable<DropRecord> drops, string currency) =>
@@ -192,8 +221,16 @@ public sealed partial class DropsViewModel(AppServices s) : ObservableObject
     [ObservableProperty] private IReadOnlyList<DropRowViewModel> _rows = [];
     [ObservableProperty] private string _summary = "";
     [ObservableProperty] private string _search = "";
+    [ObservableProperty] private DropRowViewModel? _selectedRow;
+    [ObservableProperty] private ItemDetailsViewModel? _details;
 
     partial void OnSearchChanged(string value) => Apply();
+
+    partial void OnSelectedRowChanged(DropRowViewModel? value) =>
+        Details = value is null ? null : ItemDetailsViewModel.For(s, value.Record.Item, value.Record);
+
+    [RelayCommand]
+    private void CloseDetails() => SelectedRow = null;
 
     private static string GroupKey(ArrivalKind k) =>
         ArrivalKindText.IsDropLike(k) ? "drops"

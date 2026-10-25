@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Windows.Threading;
 using Cs2DropChecker.Core;
 using Cs2DropChecker.Core.Pricing;
+using Cs2DropChecker.Core.Profit;
 using Cs2DropChecker.Core.Settings;
 using Cs2DropChecker.Core.Steam;
 using Cs2DropChecker.Core.Storage;
@@ -44,6 +45,11 @@ public sealed class AppServices : IDisposable
         Market = new MarketService(this, loggers.CreateLogger("Market"));
         Updates = new UpdateService(this, loggers.CreateLogger("Updates"));
         Hotkeys = new HotkeyService(ui, loggers.CreateLogger("Hotkeys"));
+        Notifier = new Notifier(loggers.CreateLogger("Notify"));
+        Share = new ShareCardService(this, loggers.CreateLogger("Share"));
+        Friends = new FriendsService(this, loggers.CreateLogger("Friends"));
+        Alerts = new AlertService(this, loggers.CreateLogger("Alerts"));
+        Weekly = new WeeklyReminderService(this, loggers.CreateLogger("Weekly"));
     }
 
     public Dispatcher Ui { get; }
@@ -65,7 +71,16 @@ public sealed class AppServices : IDisposable
     public MarketService Market { get; }
     public UpdateService Updates { get; }
     public HotkeyService Hotkeys { get; }
+    public Notifier Notifier { get; }
+    public ShareCardService Share { get; }
+    public FriendsService Friends { get; }
+    public AlertService Alerts { get; }
+    public WeeklyReminderService Weekly { get; }
     public Overlay.OverlayService? Overlay { get; set; }
+
+    /// <summary>Key price for case openings in <paramref name="currency"/>: the user's setting, or Valve's store price converted.</summary>
+    public decimal? KeyPriceIn(string currency) =>
+        KeyPrices.Effective(Settings.Profit.KeyPrice, Settings.Profit.KeyPriceCurrency, currency, Prices.Fx.Rate);
 
     public event EventHandler<SettingsChangedEventArgs>? SettingsChanged;
 
@@ -89,6 +104,8 @@ public sealed class AppServices : IDisposable
     {
         Watcher.Dispose();
         Updates.Dispose();
+        Friends.Dispose();
+        Weekly.Dispose();
         Hotkeys.Dispose();
         Cs2.Dispose();
     }

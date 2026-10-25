@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Cs2DropChecker.App.Services;
 
-public enum HotkeyAction { ToggleOverlay, ShowTotalValue, RefreshNow }
+public enum HotkeyAction { ToggleOverlay, ShowTotalValue, RefreshNow, ShareLastDrop }
 
 public readonly record struct Chord(ModifierKeys Modifiers, Key Key)
 {
@@ -154,6 +154,7 @@ public sealed class HotkeyService(Dispatcher ui, ILogger log) : IDisposable
         (HotkeyAction.ToggleOverlay, s.ToggleOverlay),
         (HotkeyAction.ShowTotalValue, s.ShowTotalValue),
         (HotkeyAction.RefreshNow, s.RefreshNow),
+        (HotkeyAction.ShareLastDrop, s.ShareLastDrop),
     ];
 
     /// <summary>True when no other program has registered the chord.</summary>

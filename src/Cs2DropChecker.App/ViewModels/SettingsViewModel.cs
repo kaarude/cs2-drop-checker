@@ -8,8 +8,11 @@ using CommunityToolkit.Mvvm.Input;
 using Cs2DropChecker.App.Services;
 using Cs2DropChecker.App.Views;
 using Cs2DropChecker.Core.Models;
+using Cs2DropChecker.Core.Alerts;
 using Cs2DropChecker.Core.Pricing;
+using Cs2DropChecker.Core.Profit;
 using Cs2DropChecker.Core.Settings;
+using Cs2DropChecker.Core.Weekly;
 using Cs2DropChecker.Core.Steam;
 
 namespace Cs2DropChecker.App.ViewModels;
@@ -52,6 +55,13 @@ public static class Choices
 
     public static readonly IReadOnlyList<Option> WhileOff = [new(true, "Queue cards"), new(false, "Skip cards")];
 
+    public static readonly IReadOnlyList<Option> FriendIntervals =
+        new[] { 15, 30, 60, 120, 240 }.Select(m => new Option(m, m < 60 ? $"{m} min" : $"{m / 60} h")).ToList();
+
+    public static readonly IReadOnlyList<Option> Days =
+        new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday }
+            .Select(d => new Option(d, d.ToString())).ToList();
+
     public static Option Pick(IReadOnlyList<Option> options, object value) =>
         options.FirstOrDefault(o => Equals(o.Value, value)) ?? options[0];
 
@@ -73,6 +83,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         nameof(SteamInput), nameof(WatchOnlyWhileCs2), nameof(PollInterval), nameof(Currency), nameof(StartWithWindows),
         nameof(CloseAction), nameof(OverlayEnabled), nameof(Position), nameof(OffsetX), nameof(OffsetY), nameof(Monitor),
         nameof(SizePercent), nameof(OpacityPercent), nameof(Seconds), nameof(WhileOff),
+        nameof(KeyPriceText), nameof(ShareFolder), nameof(ShareShowProfile), nameof(ShareCopy), nameof(FriendsInterval),
+        nameof(AlertToasts), nameof(DiscordUrl), nameof(ReminderEnabled), nameof(ReminderDay), nameof(ReminderTime), nameof(ReminderOverlay),
     ];
 
     private readonly AppServices _s;
@@ -94,9 +106,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         _seconds = Choices.CardSeconds[2];
         _whileOff = Choices.WhileOff[0];
         _monitor = new Option(0, "Primary");
+        _friendsInterval = Choices.FriendIntervals[1];
+        _reminderDay = Choices.Pick(Choices.Days, DayOfWeek.Sunday);
         Hotkeys.Add(new HotkeyRow(HotkeyAction.ToggleOverlay, "Overlay on / off"));
         Hotkeys.Add(new HotkeyRow(HotkeyAction.ShowTotalValue, "Show total value"));
         Hotkeys.Add(new HotkeyRow(HotkeyAction.RefreshNow, "Refresh now"));
+        Hotkeys.Add(new HotkeyRow(HotkeyAction.ShareLastDrop, "Share last drop"));
         foreach (var h in Hotkeys)
             h.PropertyChanged += (_, e) =>
             {
@@ -113,6 +128,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<Option> CloseOptions => Choices.CloseActions;
     public IReadOnlyList<Option> SecondsOptions => Choices.CardSeconds;
     public IReadOnlyList<Option> WhileOffOptions => Choices.WhileOff;
+    public IReadOnlyList<Option> FriendIntervalOptions => Choices.FriendIntervals;
+    public IReadOnlyList<Option> DayOptions => Choices.Days;
     public ObservableCollection<Option> Monitors { get; } = new();
     public ObservableCollection<SourceRow> Sources { get; } = new();
     public ObservableCollection<HotkeyRow> Hotkeys { get; } = new();
@@ -143,6 +160,22 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _hotkeyMessage = "";
     [ObservableProperty] private string _hotkeyKind = "";
     [ObservableProperty] private bool _isDirty;
+    [ObservableProperty] private string _keyPriceText = "";
+    [ObservableProperty] private string _keyPriceNote = "";
+    [ObservableProperty] private string _shareFolder = "";
+    [ObservableProperty] private bool _shareShowProfile;
+    [ObservableProperty] private bool _shareCopy;
+    [ObservableProperty] private Option _friendsInterval;
+    [ObservableProperty] private bool _alertToasts;
+    [ObservableProperty] private string _discordUrl = "";
+    [ObservableProperty] private string _discordStatus = "";
+    [ObservableProperty] private string _discordKind = "";
+    [ObservableProperty] private bool _reminderEnabled;
+    [ObservableProperty] private Option _reminderDay;
+    [ObservableProperty] private string _reminderTime = "19:00";
+    [ObservableProperty] private bool _reminderOverlay;
+    [ObservableProperty] private string _reminderNote = "";
+    [ObservableProperty] private string _formMessage = "";
     [ObservableProperty] private string _savedText = "";
 
     public string SizeText => $"{Math.Round(SizePercent)}%";
@@ -158,6 +191,31 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(CurrencyNote));
         UpdateSourceStatus();
+        UpdateKeyNote();
+    }
+
+    partial void OnKeyPriceTextChanged(string value) => UpdateKeyNote();
+
+    partial void OnDiscordUrlChanged(string value)
+    {
+        var url = value.Trim();
+        DiscordStatus = url.Length == 0 ? "Off" : DiscordWebhook.IsValidUrl(url) ? "Looks like a Discord webhook" : "Not a Discord webhook URL";
+        DiscordKind = url.Length == 0 ? "" : DiscordWebhook.IsValidUrl(url) ? "ok" : "warn";
+    }
+
+    private void UpdateKeyNote()
+    {
+        var cur = Currency.Value as string ?? "EUR";
+        var store = KeyPrices.Effective(null, null, cur, _s.Prices.Fx.Rate);
+        KeyPriceNote = KeyPriceText.Trim().Length == 0
+            ? "Empty uses Valve's store price" + (store is { } st ? $" ({Money.Format(st, cur)})" : "") + ". Keys can't be resold, so there is no market price."
+            : AlertsViewModel.ParseAmount(KeyPriceText) is null ? "Enter a price such as 2.35" : $"In {cur}. Used for new openings; past openings keep their price.";
+    }
+
+    private void UpdateReminderNote()
+    {
+        var reset = Cs2Week.NextReset(DateTimeOffset.UtcNow).ToLocalTime();
+        ReminderNote = $"Weekly drops reset every {reset.DayOfWeek} at {reset.ToString("HH:mm", CultureInfo.InvariantCulture)} your time (Wednesday 01:00 UTC). One reminder per week, only if no weekly drop arrived.";
     }
 
     partial void OnSteamInputChanged(string value)
@@ -209,6 +267,22 @@ public sealed partial class SettingsViewModel : ObservableObject
             WhileOff = Choices.Pick(Choices.WhileOff, o.QueueWhileOff);
             LoadMonitors(o.Monitor);
 
+            KeyPriceText = s.Profit.KeyPrice is { } k
+                ? (s.Profit.KeyPriceCurrency is { } kc && kc != s.Currency ? k * (_s.Prices.Fx.Rate(kc, s.Currency) ?? 1m) : k).ToString("0.00", CultureInfo.InvariantCulture)
+                : "";
+            ShareFolder = s.Share.Folder;
+            ShareShowProfile = s.Share.ShowProfile;
+            ShareCopy = s.Share.CopyToClipboard;
+            FriendsInterval = Choices.PickNearest(Choices.FriendIntervals, s.Friends.RefreshMinutes);
+            AlertToasts = s.Alerts.Toasts;
+            DiscordUrl = s.Alerts.DiscordWebhookUrl;
+            var r = s.WeeklyReminder;
+            ReminderEnabled = r.Enabled;
+            ReminderDay = Choices.Pick(Choices.Days, r.Day);
+            ReminderTime = r.Time;
+            ReminderOverlay = r.ShowOverlayCard;
+            FormMessage = "";
+
             Sources.Clear();
             foreach (var p in s.PriceSources)
             {
@@ -230,6 +304,7 @@ public sealed partial class SettingsViewModel : ObservableObject
                 {
                     HotkeyAction.ToggleOverlay => s.Hotkeys.ToggleOverlay,
                     HotkeyAction.ShowTotalValue => s.Hotkeys.ShowTotalValue,
+                    HotkeyAction.ShareLastDrop => s.Hotkeys.ShareLastDrop,
                     _ => s.Hotkeys.RefreshNow,
                 };
                 h.Recording = false;
@@ -246,6 +321,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         UpdateAccountStatus();
         UpdateSession();
         UpdateSourceStatus();
+        UpdateKeyNote();
+        UpdateReminderNote();
     }
 
     private void LoadMonitors(int selected)
@@ -412,6 +489,50 @@ public sealed partial class SettingsViewModel : ObservableObject
     private void ShowTestCard() => _s.Overlay?.ShowTestCard(BuildOverlay());
 
     [RelayCommand]
+    private void BrowseShareFolder()
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "Folder for share cards",
+            InitialDirectory = ShareFolder.Length > 0 && System.IO.Directory.Exists(ShareFolder) ? ShareFolder : null,
+        };
+        if (dialog.ShowDialog() == true) ShareFolder = dialog.FolderName;
+    }
+
+    [RelayCommand]
+    private void OpenShareFolder()
+    {
+        var folder = ShareFolder.Trim().Length > 0 ? ShareFolder.Trim() : ShareCardService.DefaultFolder;
+        try
+        {
+            System.IO.Directory.CreateDirectory(folder);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", $"\"{folder}\"") { UseShellExecute = true });
+        }
+        catch (Exception) { }
+    }
+
+    [RelayCommand]
+    private async Task TestDiscordAsync()
+    {
+        var url = DiscordUrl.Trim();
+        if (!DiscordWebhook.IsValidUrl(url))
+        {
+            DiscordStatus = "Paste a Discord webhook URL first";
+            DiscordKind = "warn";
+            return;
+        }
+        DiscordStatus = "Sending a test message…";
+        DiscordKind = "";
+        var status = await _s.Alerts.SendDiscordAsync(url, "CS2 Drop Checker test", "Price alerts will be posted here.");
+        DiscordStatus = status is >= 200 and < 300 ? "Test message sent" : status < 0 ? "Discord could not be reached" : $"Discord answered {status}";
+        DiscordKind = status is >= 200 and < 300 ? "ok" : "warn";
+    }
+
+    [RelayCommand]
+    private void ShowTestReminder() =>
+        _s.Overlay?.ShowNotice("Weekly drop not claimed yet", "Test reminder. The real one appears once a week if no weekly drop arrived.");
+
+    [RelayCommand]
     private void Discard() => Load(onlyIfClean: false);
 
     [RelayCommand]
@@ -538,8 +659,33 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
         }
 
+        var keyText = KeyPriceText.Trim();
+        decimal? keyPrice = null;
+        if (keyText.Length > 0)
+        {
+            keyPrice = AlertsViewModel.ParseAmount(keyText);
+            if (keyPrice is null or > 1000)
+            {
+                FormMessage = "Key price: enter a price such as 2.35, or leave it empty.";
+                return;
+            }
+        }
+        var hook = DiscordUrl.Trim();
+        if (hook.Length > 0 && !DiscordWebhook.IsValidUrl(hook))
+        {
+            FormMessage = "Discord: paste a webhook URL from Server Settings > Integrations, or leave it empty.";
+            return;
+        }
+        if (!TimeSpan.TryParseExact(ReminderTime.Trim(), [@"h\:mm", @"hh\:mm"], CultureInfo.InvariantCulture, out var remindAt) || remindAt >= TimeSpan.FromDays(1))
+        {
+            FormMessage = "Weekly reminder: enter a time such as 19:00.";
+            return;
+        }
+        FormMessage = "";
+
         var overlay = BuildOverlay();
         var keys = Hotkeys.ToDictionary(h => h.Action, h => h.Text);
+        var currency = Currency.Value as string ?? "EUR";
         _s.Mutate(x =>
         {
             if (profile is not null)
@@ -560,7 +706,20 @@ public sealed partial class SettingsViewModel : ObservableObject
                 ToggleOverlay = keys[HotkeyAction.ToggleOverlay],
                 ShowTotalValue = keys[HotkeyAction.ShowTotalValue],
                 RefreshNow = keys[HotkeyAction.RefreshNow],
+                ShareLastDrop = keys[HotkeyAction.ShareLastDrop],
             };
+            x.Profit.KeyPrice = keyPrice;
+            x.Profit.KeyPriceCurrency = keyPrice is null ? null : currency;
+            x.Share.Folder = ShareFolder.Trim();
+            x.Share.ShowProfile = ShareShowProfile;
+            x.Share.CopyToClipboard = ShareCopy;
+            x.Friends.RefreshMinutes = FriendsInterval.Value is int fm ? fm : 30;
+            x.Alerts.Toasts = AlertToasts;
+            x.Alerts.DiscordWebhookUrl = hook;
+            x.WeeklyReminder.Enabled = ReminderEnabled;
+            x.WeeklyReminder.Day = ReminderDay.Value is DayOfWeek d ? d : DayOfWeek.Sunday;
+            x.WeeklyReminder.Time = remindAt.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+            x.WeeklyReminder.ShowOverlayCard = ReminderOverlay;
         });
         Load(onlyIfClean: false);
         if (profile is not null)

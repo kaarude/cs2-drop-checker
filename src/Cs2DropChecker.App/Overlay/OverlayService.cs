@@ -23,6 +23,7 @@ public sealed class OverlayService : IDisposable
     private TimeSpan _cardLength;
     private DateTimeOffset? _valueUntil;
     private DateTimeOffset? _toastUntil;
+    private DateTimeOffset? _noticeUntil;
     private int _frames;
 
     public OverlayService(AppServices s, ILogger log)
@@ -144,6 +145,16 @@ public sealed class OverlayService : IDisposable
         Refresh();
     }
 
+    /// <summary>A short two-line message card, such as the weekly drop reminder.</summary>
+    public void ShowNotice(string title, string body)
+    {
+        _vm.NoticeTitle = title;
+        _vm.NoticeBody = body;
+        _noticeUntil = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(Math.Max(8, _s.Settings.Overlay.SecondsPerCard));
+        Refresh();
+        _window?.BringToTop();
+    }
+
     /// <summary>Shows a sample card right away using the given (possibly unsaved) layout.</summary>
     public void ShowTestCard(OverlaySettings preview)
     {
@@ -240,12 +251,18 @@ public sealed class OverlayService : IDisposable
             _vm.Toast = "";
             _toastUntil = null;
         }
+        if (_noticeUntil is { } nu && now >= nu)
+        {
+            _vm.NoticeTitle = "";
+            _vm.NoticeBody = "";
+            _noticeUntil = null;
+        }
         Refresh();
     }
 
     private void Refresh()
     {
-        var active = _vm.Card is not null || _vm.ShowValue || _vm.Toast.Length > 0;
+        var active = _vm.Card is not null || _vm.ShowValue || _vm.Toast.Length > 0 || _vm.NoticeTitle.Length > 0;
         if (active)
         {
             if (_window is null)
