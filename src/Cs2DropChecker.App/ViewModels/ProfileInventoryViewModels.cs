@@ -33,12 +33,16 @@ public abstract partial class ProfileInventoryViewModel : ObservableObject
     [ObservableProperty] private ItemDetailsViewModel? _details;
     [ObservableProperty] private bool _showSignIn;
 
+    protected ProfileInventoryViewModel() => Grid.TileOpened += (_, t) => OpenTile(t);
+
     public ItemGridViewModel Grid { get; } = new();
 
     protected abstract ItemDetailsViewModel MakeDetails(InventoryItem item);
 
-    [RelayCommand]
-    private void SelectTile(TileViewModel tile) =>
+    /// <summary>Default for a clicked tile: toggle the details panel with the where-to-sell comparison.</summary>
+    protected virtual void OpenTile(TileViewModel tile) => ToggleDetails(tile);
+
+    protected void ToggleDetails(TileViewModel tile) =>
         Details = Details?.Item == tile.Item ? null : MakeDetails(tile.Item);
 
     [RelayCommand]
@@ -95,7 +99,6 @@ public sealed partial class InventoryViewModel : ProfileInventoryViewModel
     {
         s = services;
         s.Market.Changed += (_, _) => ApplySell();
-        Grid.TileOpened += (_, t) => OpenSell(t);
         Grid.SellSelectedRequested += (_, tiles) => OpenBulkSell(tiles);
     }
 
@@ -159,10 +162,16 @@ public sealed partial class InventoryViewModel : ProfileInventoryViewModel
         Grid.SetSell(can ? s.Market.Evaluate : null, can ? s.Market.ListingFor : null);
     }
 
-    private void OpenSell(TileViewModel tile)
+    /// <summary>The sell window (which includes the market comparison) when the item can go to the Steam Market, else the details panel.</summary>
+    protected override void OpenTile(TileViewModel tile)
     {
-        if (!CanSell || tile.Sell is null) return;
-        SellWindow.Open(s, tile.Item, tile.Quote);
+        if (CanSell && tile.Interactive)
+        {
+            Details = null;
+            SellWindow.Open(s, tile.Item, tile.Quote);
+            return;
+        }
+        ToggleDetails(tile);
     }
 
     private void OpenBulkSell(IReadOnlyList<TileViewModel> tiles)

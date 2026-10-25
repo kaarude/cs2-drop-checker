@@ -168,7 +168,7 @@
   </Style>
 
   <DataTemplate x:Key="Tile" DataType="{x:Type vm:TileViewModel}">
-    <Button x:Name="btn" Style="{StaticResource TileButton}" Margin="0,0,8,8"
+    <Button x:Name="btn" Style="{StaticResource TileButton}" Margin="0,0,8,8" Cursor="Hand"
             Command="{Binding DataContext.Grid.OpenTileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
     <c:CutBorder x:Name="tile" Width="120" Height="174" Cut="10" Corners="TopRight" BorderThickness="1"
                  BorderBrush="{Binding RarityHex, Converter={StaticResource HexBrush}}" Background="{StaticResource CardBg}">
@@ -219,9 +219,6 @@
       <Trigger SourceName="tile" Property="IsMouseOver" Value="True">
         <Setter TargetName="tile" Property="BorderThickness" Value="2" />
       </Trigger>
-      <DataTrigger Binding="{Binding Interactive}" Value="True">
-        <Setter TargetName="btn" Property="Cursor" Value="Hand" />
-      </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
           <Condition Binding="{Binding CanCheck}" Value="True" />
@@ -331,6 +328,65 @@
     </Border>
   </ControlTemplate>
 
+  <!-- Where to sell: net payout per market after fees -->
+  <DataTemplate x:Key="SellCompare" DataType="{x:Type vm:SellCompareViewModel}">
+    <StackPanel>
+      <c:TrackedText Style="{StaticResource CardHead}" Text="Where to sell" />
+      <TextBlock x:Name="headline" Text="{Binding Headline}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Text2}"
+                 TextWrapping="Wrap" Margin="0,6,0,8" />
+      <Grid Margin="0,0,0,4">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="66" />
+          <ColumnDefinition Width="58" />
+          <ColumnDefinition Width="70" />
+        </Grid.ColumnDefinitions>
+        <c:TrackedText Style="{StaticResource ColHead}" Text="Market" Margin="8,0,0,0" />
+        <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="Price" HorizontalAlignment="Right" />
+        <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Fees" HorizontalAlignment="Right" />
+        <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="You get" HorizontalAlignment="Right" Margin="0,0,8,0" />
+      </Grid>
+      <ItemsControl ItemsSource="{Binding Rows}" Focusable="False">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border x:Name="b" BorderBrush="{StaticResource LineFaint}" BorderThickness="1" Padding="8,6" Margin="0,0,0,4">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="66" />
+                  <ColumnDefinition Width="58" />
+                  <ColumnDefinition Width="62" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                  <TextBlock x:Name="n" Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding Payout}" FontSize="10" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding ListPrice}" HorizontalAlignment="Right" FontSize="11.5" />
+                <TextBlock Grid.Column="2" Style="{StaticResource Cell}" Text="{Binding Fee}" HorizontalAlignment="Right" FontSize="11.5" Foreground="{StaticResource Dim}" />
+                <TextBlock x:Name="net" Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding Net}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{StaticResource Text}" />
+              </Grid>
+            </Border>
+            <DataTemplate.Triggers>
+              <DataTrigger Binding="{Binding Best}" Value="True">
+                <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Accent}" />
+                <Setter TargetName="b" Property="Background" Value="{StaticResource WarnBg}" />
+                <Setter TargetName="net" Property="Foreground" Value="{StaticResource Gold}" />
+              </DataTrigger>
+            </DataTemplate.Triggers>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <TextBlock Style="{StaticResource Note}" Text="{Binding FeeNote}" FontSize="10.5" Margin="0,4,0,0" />
+      <TextBlock Style="{StaticResource Note}" Text="{Binding Context}" FontSize="10.5" Margin="0,2,0,0" TextWrapping="Wrap"
+                 Visibility="{Binding Context, Converter={StaticResource Vis}}" />
+    </StackPanel>
+    <DataTemplate.Triggers>
+      <DataTrigger Binding="{Binding HasBest}" Value="True">
+        <Setter TargetName="headline" Property="Foreground" Value="{StaticResource Gold}" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+
   <!-- Item details: price, best place to sell, share and alert shortcuts -->
   <DataTemplate x:Key="ItemDetails" DataType="{x:Type vm:ItemDetailsViewModel}">
     <c:CutBorder Style="{StaticResource HudCard}">
@@ -362,52 +418,7 @@
                      Visibility="{Binding Note, Converter={StaticResource Vis}}" />
 
           <Border BorderBrush="{StaticResource LineSoft}" BorderThickness="0,1,0,0" Margin="0,12,0,10" />
-          <c:TrackedText Style="{StaticResource CardHead}" Text="Where to sell" />
-          <TextBlock x:Name="headline" Text="{Binding Headline}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Text2}"
-                     TextWrapping="Wrap" Margin="0,6,0,8" />
-          <Grid Margin="0,0,0,4">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="66" />
-              <ColumnDefinition Width="58" />
-              <ColumnDefinition Width="70" />
-            </Grid.ColumnDefinitions>
-            <c:TrackedText Style="{StaticResource ColHead}" Text="Market" Margin="8,0,0,0" />
-            <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="Price" HorizontalAlignment="Right" />
-            <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Fees" HorizontalAlignment="Right" />
-            <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="You get" HorizontalAlignment="Right" Margin="0,0,8,0" />
-          </Grid>
-          <ItemsControl ItemsSource="{Binding Rows}" Focusable="False">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <Border x:Name="b" BorderBrush="{StaticResource LineFaint}" BorderThickness="1" Padding="8,6" Margin="0,0,0,4">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="66" />
-                      <ColumnDefinition Width="58" />
-                      <ColumnDefinition Width="62" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center">
-                      <TextBlock x:Name="n" Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Text="{Binding Payout}" FontSize="10" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding ListPrice}" HorizontalAlignment="Right" FontSize="11.5" />
-                    <TextBlock Grid.Column="2" Style="{StaticResource Cell}" Text="{Binding Fee}" HorizontalAlignment="Right" FontSize="11.5" Foreground="{StaticResource Dim}" />
-                    <TextBlock x:Name="net" Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding Net}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{StaticResource Text}" />
-                  </Grid>
-                </Border>
-                <DataTemplate.Triggers>
-                  <DataTrigger Binding="{Binding Best}" Value="True">
-                    <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Accent}" />
-                    <Setter TargetName="b" Property="Background" Value="{StaticResource WarnBg}" />
-                    <Setter TargetName="net" Property="Foreground" Value="{StaticResource Gold}" />
-                  </DataTrigger>
-                </DataTemplate.Triggers>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <TextBlock Style="{StaticResource Note}" Text="{Binding FeeNote}" FontSize="10.5" Margin="0,4,0,0" />
+          <ContentControl Focusable="False" Content="{Binding Compare}" ContentTemplate="{StaticResource SellCompare}" />
 
           <WrapPanel Margin="0,14,0,0">
             <Button Style="{StaticResource PrimaryButton}" Content="Share" Margin="0,0,8,6"
@@ -420,10 +431,5 @@
         </StackPanel>
       </ScrollViewer>
     </c:CutBorder>
-    <DataTemplate.Triggers>
-      <DataTrigger Binding="{Binding HasBest}" Value="True">
-        <Setter TargetName="headline" Property="Foreground" Value="{StaticResource Gold}" />
-      </DataTrigger>
-    </DataTemplate.Triggers>
   </DataTemplate>
 </ResourceDictionary>

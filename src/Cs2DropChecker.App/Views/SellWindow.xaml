@@ -85,6 +85,11 @@
             </StackPanel>
           </UniformGrid>
 
+          <!-- Where to sell -->
+          <c:CutBorder Style="{StaticResource HudCard}" Margin="0,16,0,0">
+            <ContentControl Margin="14,10,12,10" Focusable="False" Content="{Binding Compare}" ContentTemplate="{StaticResource SellCompare}" />
+          </c:CutBorder>
+
           <!-- Price choice -->
           <StackPanel Margin="0,18,0,0" Visibility="{Binding ShowSell, Converter={StaticResource Vis}}">
             <c:TrackedText Style="{StaticResource Lbl}" Text="Your price" FontSize="10" />

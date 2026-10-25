@@ -89,6 +89,8 @@ public sealed partial class SellViewModel : ObservableObject, IDisposable
         ];
         Custom = new PriceChoice("custom", "Custom price") { Available = true, Hint = "Type what the buyer pays or what you get" };
         _currency = s.Market.CurrencyIso;
+        Compare = new SellCompareViewModel(SellAdvisor.For(s.Prices, item),
+            "Compared at the app's latest prices. This window lists on the Steam Market only; Skinport sales are made on skinport.com.");
         s.Market.Changed += OnMarketChanged;
         UpdateMode();
     }
@@ -103,6 +105,7 @@ public sealed partial class SellViewModel : ObservableObject, IDisposable
     public string ReferenceText { get; }
     public IReadOnlyList<PriceChoice> Choices { get; }
     public PriceChoice Custom { get; }
+    public SellCompareViewModel Compare { get; }
     public ListingRow? Listing { get; private set; }
 
     public event EventHandler? CloseRequested;
