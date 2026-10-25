@@ -2,7 +2,8 @@ using Cs2DropChecker.Core.Models;
 
 namespace Cs2DropChecker.Core.Detection;
 
-public sealed record ClassifiedItem(InventoryItem Item, ArrivalKind Kind, bool SeenLate);
+/// <param name="Source">The consumed container for openings, when the diff shows which one it was.</param>
+public sealed record ClassifiedItem(InventoryItem Item, ArrivalKind Kind, bool SeenLate, InventoryItem? Source = null);
 
 public sealed record DiffResult(IReadOnlyList<ClassifiedItem> Added, IReadOnlyList<InventoryItem> Removed, int NewlyHidden);
 
@@ -68,7 +69,7 @@ public static class DropClassifier
             if (added is null) break;
             open.Remove(added);
             evidence.Remove(container);
-            result.Add(new(added, kind, false));
+            result.Add(new(added, kind, false, container));
         }
 
         if (!previous.SignedIn && !next.SignedIn)

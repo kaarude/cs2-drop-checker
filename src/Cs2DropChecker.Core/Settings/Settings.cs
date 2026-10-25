@@ -22,6 +22,11 @@ public sealed class AppSettings
     public bool StartWithWindows { get; set; } = true;
     public bool CloseToTray { get; set; } = true;
     public DateTimeOffset? LastViewedDropsAt { get; set; }
+    public ProfitSettings Profit { get; set; } = new();
+    public ShareSettings Share { get; set; } = new();
+    public FriendsSettings Friends { get; set; } = new();
+    public AlertSettings Alerts { get; set; } = new();
+    public WeeklyReminderSettings WeeklyReminder { get; set; } = new();
 
     [JsonIgnore] public ulong SteamId64 => ulong.TryParse(SteamId, out var v) ? v : 0;
 
@@ -58,6 +63,48 @@ public sealed class HotkeySettings
     public string ToggleOverlay { get; set; } = "Ctrl+Shift+O";
     public string ShowTotalValue { get; set; } = "Ctrl+Shift+V";
     public string RefreshNow { get; set; } = "Ctrl+Shift+R";
+    public string ShareLastDrop { get; set; } = "Ctrl+Shift+S";
+}
+
+public sealed class ProfitSettings
+{
+    /// <summary>Price of one case key. Null uses Valve's store price converted to the chosen currency.</summary>
+    public decimal? KeyPrice { get; set; }
+    public string? KeyPriceCurrency { get; set; }
+}
+
+public sealed class ShareSettings
+{
+    /// <summary>Where share cards are saved. Empty means Pictures\CS2 Drop Checker.</summary>
+    public string Folder { get; set; } = "";
+    public bool ShowProfile { get; set; } = true;
+    public bool CopyToClipboard { get; set; } = true;
+}
+
+public sealed class FriendsSettings
+{
+    public int RefreshMinutes { get; set; } = 30;
+}
+
+public sealed class AlertSettings
+{
+    public bool Toasts { get; set; } = true;
+    /// <summary>Optional Discord webhook. Kept only in the local settings file and never written to logs.</summary>
+    public string DiscordWebhookUrl { get; set; } = "";
+}
+
+public sealed class WeeklyReminderSettings
+{
+    public bool Enabled { get; set; } = true;
+    public DayOfWeek Day { get; set; } = DayOfWeek.Sunday;
+    /// <summary>Local time of day, HH:mm.</summary>
+    public string Time { get; set; } = "19:00";
+    public bool ShowOverlayCard { get; set; } = true;
+    /// <summary>Start of the CS2 week the reminder was last shown for.</summary>
+    public DateTimeOffset? LastShownWeek { get; set; }
+
+    [JsonIgnore]
+    public TimeSpan TimeOfDay => TimeSpan.TryParseExact(Time, @"hh\:mm", System.Globalization.CultureInfo.InvariantCulture, out var t) ? t : new TimeSpan(19, 0, 0);
 }
 
 public sealed class SettingsStore(string path)
@@ -104,5 +151,17 @@ public sealed class SettingsStore(string path)
         s.Overlay.OffsetX = Math.Clamp(s.Overlay.OffsetX, 0, 2000);
         s.Overlay.OffsetY = Math.Clamp(s.Overlay.OffsetY, 0, 2000);
         s.Hotkeys ??= new HotkeySettings();
+        s.Hotkeys.ShareLastDrop ??= "Ctrl+Shift+S";
+        s.Profit ??= new ProfitSettings();
+        if (s.Profit.KeyPrice is { } k && (k < 0 || k > 1000)) s.Profit.KeyPrice = null;
+        if (s.Profit.KeyPrice is not null && !Currencies.IsKnown(s.Profit.KeyPriceCurrency)) s.Profit.KeyPriceCurrency = s.Currency;
+        s.Share ??= new ShareSettings();
+        s.Share.Folder = (s.Share.Folder ?? "").Trim();
+        s.Friends ??= new FriendsSettings();
+        s.Friends.RefreshMinutes = Math.Clamp(s.Friends.RefreshMinutes, 15, 240);
+        s.Alerts ??= new AlertSettings();
+        s.Alerts.DiscordWebhookUrl = (s.Alerts.DiscordWebhookUrl ?? "").Trim();
+        s.WeeklyReminder ??= new WeeklyReminderSettings();
+        s.WeeklyReminder.Time = s.WeeklyReminder.TimeOfDay.ToString(@"hh\:mm", System.Globalization.CultureInfo.InvariantCulture);
     }
 }
