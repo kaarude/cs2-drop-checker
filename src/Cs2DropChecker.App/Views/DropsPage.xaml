@@ -12,11 +12,17 @@
         <c:TrackedText Style="{StaticResource H1}" Text="Drops" VerticalAlignment="Center" />
         <c:TrackedText Style="{StaticResource MutedText}" Text="{Binding Summary}" Margin="18,4,0,0" />
       </StackPanel>
-      <Button Style="{StaticResource PrimaryButton}" Content="Refresh now" HorizontalAlignment="Right"
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button Style="{StaticResource GhostButton}" Content="Share last drop" Height="32" Margin="0,0,10,0"
+              ToolTip="Copy a card of your newest drop to the clipboard and save it as PNG"
+              Command="{Binding DataContext.ShareLastDropCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+      <Button Style="{StaticResource PrimaryButton}" Content="Refresh now"
               Tag="{Binding DataContext.RefreshKey, RelativeSource={RelativeSource AncestorType=Window}}"
               Command="{Binding DataContext.RefreshNowCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+      </StackPanel>
     </Grid>
-    <c:CutBorder Grid.Row="1" Style="{StaticResource HudCard}">
+    <Grid Grid.Row="1">
+    <c:CutBorder Style="{StaticResource HudCard}">
       <Grid Margin="16,12,16,6">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
@@ -24,7 +30,11 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid Margin="0,0,0,8">
-          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ClipToBounds="True">
             <c:TrackedText Style="{StaticResource CardHead}" Text="History" Margin="0,0,16,0" />
             <ItemsControl ItemsSource="{Binding Filters}" ItemsPanel="{StaticResource Horizontal}" Focusable="False">
               <ItemsControl.ItemTemplate>
@@ -36,7 +46,7 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
           </StackPanel>
-          <TextBox Style="{StaticResource HudTextBox}" Tag="Search items" Width="220" Height="28" FontSize="12" HorizontalAlignment="Right"
+          <TextBox Grid.Column="1" Style="{StaticResource HudTextBox}" Tag="Search items" Width="220" Margin="10,0,0,0" Height="28" FontSize="12" HorizontalAlignment="Right"
                    Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=150}" />
         </Grid>
         <ContentControl Grid.Row="1" Template="{StaticResource DropHeader}" Focusable="False" Margin="0,0,10,0" />
@@ -46,5 +56,10 @@
                    Text="No items here yet. The app records weekly drops, case openings, trade-ups and purchases from the moment it starts watching." />
       </Grid>
     </c:CutBorder>
+    <!-- Floats over the price columns: the table's fixed columns don't fit next to the panel. -->
+    <Border HorizontalAlignment="Right" Background="{StaticResource Bg}" Padding="14,0,0,0" Visibility="{Binding Details, Converter={StaticResource Vis}}">
+      <ContentControl Width="340" Focusable="False" Content="{Binding Details}" ContentTemplate="{StaticResource ItemDetails}" />
+    </Border>
+    </Grid>
   </Grid>
 </UserControl>

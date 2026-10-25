@@ -183,7 +183,7 @@ public sealed partial class LookupViewModel(AppServices s) : ProfileInventoryVie
 {
     private CancellationTokenSource? _cts;
 
-    protected override ItemDetailsViewModel MakeDetails(InventoryItem item) => ItemDetailsViewModel.For(s, item);
+    protected override ItemDetailsViewModel MakeDetails(InventoryItem item) => ItemDetailsViewModel.For(s, item, own: false);
 
     [ObservableProperty] private string _query = "";
     [ObservableProperty] private bool _busy;

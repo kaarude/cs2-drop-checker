@@ -48,6 +48,8 @@
     <Grid Margin="0,0,0,14">
       <c:TrackedText Style="{StaticResource H1}" Text="Settings" VerticalAlignment="Center" />
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <TextBlock Style="{StaticResource StatusText}" Tag="warn" Text="{Binding FormMessage}" FontSize="11.5" MaxWidth="420" Margin="0,0,14,0"
+                   Visibility="{Binding FormMessage, Converter={StaticResource Vis}}" />
         <c:TrackedText Text="{Binding SavedText}" FontSize="11" FontWeight="SemiBold" Spacing="1.4" Foreground="{StaticResource Up}" VerticalAlignment="Center" Margin="0,0,14,0" />
         <Button Style="{StaticResource GhostButton}" Content="Discard" Command="{Binding DiscardCommand}" Height="32" Margin="0,0,10,0"
                 Visibility="{Binding IsDirty, Converter={StaticResource Vis}}" />
@@ -169,7 +171,45 @@
               </DockPanel>
             </StackPanel>
           </c:CutBorder>
-        </StackPanel>
+
+          <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+            <StackPanel Margin="16,12,16,4">
+              <c:TrackedText Style="{StaticResource CardHead}" Text="Case profit / loss" Margin="0,0,0,14" />
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Key price" />
+                <TextBox Style="{StaticResource HudTextBox}" Width="100" Height="30" FontSize="12.5" Tag="Store price"
+                         Text="{Binding KeyPriceText, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="{Binding KeyPriceNote}" />
+              </DockPanel>
+            </StackPanel>
+          </c:CutBorder>
+
+          <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+            <StackPanel Margin="16,12,16,4">
+              <Grid Margin="0,0,0,14">
+                <c:TrackedText Style="{StaticResource CardHead}" Text="Weekly drop reminder" />
+                <Button Style="{StaticResource LinkButton}" Content="Show test reminder" HorizontalAlignment="Right" Command="{Binding ShowTestReminderCommand}" />
+              </Grid>
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Remind me" />
+                <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding ReminderEnabled}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="Windows notification if this week's drop hasn't arrived" />
+              </DockPanel>
+              <DockPanel Style="{StaticResource Row}" IsEnabled="{Binding ReminderEnabled}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="When" />
+                <ComboBox Style="{StaticResource HudCombo}" Width="120" ItemsSource="{Binding DayOptions}" SelectedItem="{Binding ReminderDay}" />
+                <TextBox Style="{StaticResource HudTextBox}" Width="70" Height="30" FontSize="12.5" Margin="10,0,0,0" Tag="19:00"
+                         Text="{Binding ReminderTime, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="24-hour time" />
+              </DockPanel>
+              <DockPanel Style="{StaticResource Row}" IsEnabled="{Binding ReminderEnabled}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Overlay card" />
+                <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding ReminderOverlay}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="Also show a card in game" />
+              </DockPanel>
+              <TextBlock Style="{StaticResource Note}" Text="{Binding ReminderNote}" Margin="0,0,0,12" />
+            </StackPanel>
+          </c:CutBorder>        </StackPanel>
 
         <!-- Right column -->
         <StackPanel Grid.Column="2">
@@ -301,7 +341,64 @@
                          Text="Shortcuts are global, so they work while CS2 has focus. New shortcuts apply when you save." />
             </StackPanel>
           </c:CutBorder>
-        </StackPanel>
+
+          <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+            <StackPanel Margin="16,12,16,4">
+              <c:TrackedText Style="{StaticResource CardHead}" Text="Share cards" Margin="0,0,0,14" />
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Save to" />
+                <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="Open" Height="28" Margin="8,0,0,0" Command="{Binding OpenShareFolderCommand}" />
+                <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="Browse" Height="28" Margin="8,0,0,0" Command="{Binding BrowseShareFolderCommand}" />
+                <TextBox Style="{StaticResource HudTextBox}" Height="30" FontSize="12" Tag="Pictures\CS2 Drop Checker"
+                         Text="{Binding ShareFolder, UpdateSourceTrigger=PropertyChanged}" />
+              </DockPanel>
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Copy to clipboard" />
+                <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding ShareCopy}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="Paste straight into Discord or a chat" />
+              </DockPanel>
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Show my profile" />
+                <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding ShareShowProfile}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="Steam name and avatar on the card" />
+              </DockPanel>
+              <TextBlock Style="{StaticResource Note}" Margin="0,0,0,12" Text="Cards are saved as PNG files on this PC. Nothing is uploaded." />
+            </StackPanel>
+          </c:CutBorder>
+
+          <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+            <StackPanel Margin="16,12,16,4">
+              <c:TrackedText Style="{StaticResource CardHead}" Text="Price alerts" Margin="0,0,0,14" />
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Notifications" />
+                <CheckBox Style="{StaticResource Toggle}" IsChecked="{Binding AlertToasts}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="Shown from the tray icon" />
+              </DockPanel>
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Discord webhook" />
+                <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="Test" Height="28" Margin="8,0,0,0" Command="{Binding TestDiscordCommand}" />
+                <TextBox Style="{StaticResource HudTextBox}" Height="30" FontSize="12" Tag="Optional · https://discord.com/api/webhooks/…"
+                         Text="{Binding DiscordUrl, UpdateSourceTrigger=PropertyChanged}" />
+              </DockPanel>
+              <DockPanel Margin="152,-6,0,12" Visibility="{Binding DiscordStatus, Converter={StaticResource Vis}}">
+                <Ellipse DockPanel.Dock="Left" Style="{StaticResource Dot}" Tag="{Binding DiscordKind}" Margin="0,0,7,0" />
+                <TextBlock Style="{StaticResource StatusText}" Tag="{Binding DiscordKind}" Text="{Binding DiscordStatus}" FontSize="11.5" />
+              </DockPanel>
+              <TextBlock Style="{StaticResource Note}" Margin="0,0,0,12"
+                         Text="The webhook URL stays in your local settings file and is never written to the log." />
+            </StackPanel>
+          </c:CutBorder>
+
+          <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+            <StackPanel Margin="16,12,16,4">
+              <c:TrackedText Style="{StaticResource CardHead}" Text="Friends" Margin="0,0,0,14" />
+              <DockPanel Style="{StaticResource Row}">
+                <c:TrackedText Style="{StaticResource FieldLabel}" Text="Refresh every" />
+                <ComboBox Style="{StaticResource HudCombo}" Width="100" ItemsSource="{Binding FriendIntervalOptions}" SelectedItem="{Binding FriendsInterval}" />
+                <TextBlock Style="{StaticResource SideNote}" Text="Friends are checked one at a time and back off if Steam rate-limits" />
+              </DockPanel>
+            </StackPanel>
+          </c:CutBorder>        </StackPanel>
       </Grid>
     </ScrollViewer>
   </Grid>

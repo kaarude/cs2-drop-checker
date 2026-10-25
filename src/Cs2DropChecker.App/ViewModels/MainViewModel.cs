@@ -212,6 +212,27 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task ShareLastDropAsync()
+    {
+        var r = await _s.Share.ShareLastDropAsync();
+        ShowFlash(r.Message, r.Ok ? "ok" : "warn");
+    }
+
+    /// <summary>Opens the Drops page with the clicked row's details; clicking the open row again closes them.</summary>
+    [RelayCommand]
+    private void SelectDrop(DropRowViewModel? row)
+    {
+        if (row is null) return;
+        if (Page == Page.Drops && Drops.SelectedRow?.Id == row.Id)
+        {
+            Drops.SelectedRow = null;
+            return;
+        }
+        Page = Page.Drops;
+        Drops.SelectedRow = Drops.Rows.FirstOrDefault(r => r.Id == row.Id) ?? row;
+    }
+
+    [RelayCommand]
     private void CreateAlert(InventoryItem? item)
     {
         if (item is null) return;

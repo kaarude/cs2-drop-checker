@@ -46,10 +46,11 @@
           <ColumnDefinition Width="92" />
           <ColumnDefinition Width="*" MinWidth="180" />
           <ColumnDefinition Width="122" />
-          <ColumnDefinition Width="250" />
+          <ColumnDefinition Width="216" />
           <ColumnDefinition Width="84" />
           <ColumnDefinition Width="100" />
           <ColumnDefinition Width="110" />
+          <ColumnDefinition Width="34" />
         </Grid.ColumnDefinitions>
         <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="When" Margin="9,0,0,0" />
         <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Item" Margin="2,0,0,0" />
@@ -63,17 +64,22 @@
   </ControlTemplate>
 
   <DataTemplate x:Key="DropRow" DataType="{x:Type vm:DropRowViewModel}">
-    <Border x:Name="row" BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Height="38" Background="Transparent">
+    <Border x:Name="row" BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Height="38" Background="Transparent" Cursor="Hand"
+            ToolTip="Click for selling options">
+      <Border.InputBindings>
+        <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.SelectDropCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+      </Border.InputBindings>
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="3" />
           <ColumnDefinition Width="92" />
           <ColumnDefinition Width="*" MinWidth="180" />
           <ColumnDefinition Width="122" />
-          <ColumnDefinition Width="250" />
+          <ColumnDefinition Width="216" />
           <ColumnDefinition Width="84" />
           <ColumnDefinition Width="100" />
           <ColumnDefinition Width="110" />
+          <ColumnDefinition Width="34" />
         </Grid.ColumnDefinitions>
         <Rectangle Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" Margin="0,8" />
         <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding When}" Margin="9,0,0,0" FontSize="11.5" />
@@ -97,6 +103,9 @@
           <TextBlock x:Name="now" Style="{StaticResource Cell}" Text="{Binding Now}" Foreground="{StaticResource Text}" FontWeight="SemiBold" />
         </StackPanel>
         <TextBlock Grid.Column="7" Style="{StaticResource Cell}" Text="{Binding Source}" Margin="16,0,0,0" FontSize="11.5" />
+        <Button Grid.Column="8" Style="{StaticResource IconButton}" Content="{StaticResource IcoShare}" ToolTip="Share card: copy to clipboard and save as PNG"
+                AutomationProperties.Name="Share"
+                Command="{Binding DataContext.ShareDropCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
       </Grid>
     </Border>
     <DataTemplate.Triggers>
@@ -289,4 +298,132 @@
       </DataTrigger>
     </Style.Triggers>
   </Style>
+  <!-- Signed money value: Tag "up" is green, "down" is red -->
+  <Style x:Key="TrendValue" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource Text}" />
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="up">
+        <Setter Property="Foreground" Value="{StaticResource Up}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="down">
+        <Setter Property="Foreground" Value="{StaticResource Down}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+
+  <!-- "Sign in to Steam to use this" note with a button to the sign-in step -->
+  <ControlTemplate x:Key="SignInNote" TargetType="ContentControl">
+    <Border Background="{StaticResource WarnBg}" BorderBrush="{StaticResource AccentLine}" BorderThickness="1" Padding="14,10">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Path Data="{StaticResource IcoInfo}" Width="14" Height="14" Stretch="Uniform" Stroke="{StaticResource Warn}" StrokeThickness="1.4" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Margin="10,0,14,0" VerticalAlignment="Center">
+          <TextBlock Text="Sign in to Steam to use this" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Warn}" />
+          <TextBlock Style="{StaticResource Note}" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}" Margin="0,2,0,0" />
+        </StackPanel>
+        <Button Grid.Column="2" Style="{StaticResource GhostButton}" Content="Sign in to Steam" VerticalAlignment="Center"
+                Command="{Binding DataContext.SignInCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+      </Grid>
+    </Border>
+  </ControlTemplate>
+
+  <!-- Item details: price, best place to sell, share and alert shortcuts -->
+  <DataTemplate x:Key="ItemDetails" DataType="{x:Type vm:ItemDetailsViewModel}">
+    <c:CutBorder Style="{StaticResource HudCard}">
+      <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+        <StackPanel Margin="16,12,16,14">
+          <Grid Margin="0,0,0,10">
+            <c:TrackedText Style="{StaticResource CardHead}" Text="Item details" />
+            <Button Style="{StaticResource IconButton}" Content="{StaticResource IcoClose}" HorizontalAlignment="Right" ToolTip="Close"
+                    AutomationProperties.Name="Close details"
+                    Command="{Binding DataContext.CloseDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+          </Grid>
+          <Grid Height="120">
+            <Rectangle Fill="{Binding RarityHex, Converter={StaticResource HexTint}, ConverterParameter=40}" />
+            <Image c:Img.DecodeWidth="360" c:Img.Icon="{Binding IconUrl}" Margin="14,8" Stretch="Uniform" />
+            <Rectangle Height="3" VerticalAlignment="Bottom" Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" />
+          </Grid>
+          <c:TrackedText Text="{Binding RarityText}" FontSize="10" FontWeight="Bold" Spacing="1" Margin="0,10,0,0"
+                         Foreground="{Binding RarityHex, Converter={StaticResource HexBrush}}" />
+          <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Text}" TextWrapping="Wrap" Margin="0,3,0,0" />
+          <TextBlock Text="{Binding Wear}" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="0,2,0,0" />
+          <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+            <TextBlock Text="{Binding PriceText}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Gold}" VerticalAlignment="Bottom" />
+            <c:TrackedText Style="{StaticResource Sub}" Text="{Binding SourceText}" FontSize="10" Margin="10,0,0,4" VerticalAlignment="Bottom" />
+          </StackPanel>
+          <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0" Visibility="{Binding IsDrop, Converter={StaticResource Vis}}">
+            <Run Text="{Binding How, Mode=OneWay}" /><Run Text=" · at drop " /><Run Text="{Binding AtDrop, Mode=OneWay}" Foreground="{StaticResource Text2}" />
+          </TextBlock>
+          <TextBlock Style="{StaticResource Note}" Text="{Binding Note}" Foreground="{StaticResource Warn}" Margin="0,6,0,0"
+                     Visibility="{Binding Note, Converter={StaticResource Vis}}" />
+
+          <Border BorderBrush="{StaticResource LineSoft}" BorderThickness="0,1,0,0" Margin="0,12,0,10" />
+          <c:TrackedText Style="{StaticResource CardHead}" Text="Where to sell" />
+          <TextBlock x:Name="headline" Text="{Binding Headline}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Text2}"
+                     TextWrapping="Wrap" Margin="0,6,0,8" />
+          <Grid Margin="0,0,0,4">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="66" />
+              <ColumnDefinition Width="58" />
+              <ColumnDefinition Width="70" />
+            </Grid.ColumnDefinitions>
+            <c:TrackedText Style="{StaticResource ColHead}" Text="Market" Margin="8,0,0,0" />
+            <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="Price" HorizontalAlignment="Right" />
+            <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Fees" HorizontalAlignment="Right" />
+            <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="You get" HorizontalAlignment="Right" Margin="0,0,8,0" />
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Rows}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border x:Name="b" BorderBrush="{StaticResource LineFaint}" BorderThickness="1" Padding="8,6" Margin="0,0,0,4">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="66" />
+                      <ColumnDefinition Width="58" />
+                      <ColumnDefinition Width="62" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock x:Name="n" Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding Payout}" FontSize="10" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding ListPrice}" HorizontalAlignment="Right" FontSize="11.5" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource Cell}" Text="{Binding Fee}" HorizontalAlignment="Right" FontSize="11.5" Foreground="{StaticResource Dim}" />
+                    <TextBlock x:Name="net" Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding Net}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{StaticResource Text}" />
+                  </Grid>
+                </Border>
+                <DataTemplate.Triggers>
+                  <DataTrigger Binding="{Binding Best}" Value="True">
+                    <Setter TargetName="b" Property="BorderBrush" Value="{StaticResource Accent}" />
+                    <Setter TargetName="b" Property="Background" Value="{StaticResource WarnBg}" />
+                    <Setter TargetName="net" Property="Foreground" Value="{StaticResource Gold}" />
+                  </DataTrigger>
+                </DataTemplate.Triggers>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Style="{StaticResource Note}" Text="{Binding FeeNote}" FontSize="10.5" Margin="0,4,0,0" />
+
+          <WrapPanel Margin="0,14,0,0">
+            <Button Style="{StaticResource PrimaryButton}" Content="Share" Margin="0,0,8,6"
+                    Tag="{Binding DataContext.ShareKey, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Visibility="{Binding CanShare, Converter={StaticResource Vis}}"
+                    Command="{Binding DataContext.ShareDropCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" />
+            <Button Style="{StaticResource GhostButton}" Content="Price alert" Height="32" Margin="0,0,0,6"
+                    Command="{Binding DataContext.CreateAlertCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Item}" />
+          </WrapPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </c:CutBorder>
+    <DataTemplate.Triggers>
+      <DataTrigger Binding="{Binding HasBest}" Value="True">
+        <Setter TargetName="headline" Property="Foreground" Value="{StaticResource Gold}" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
 </ResourceDictionary>

@@ -30,6 +30,15 @@
     <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
       <v:SettingsPage />
     </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ProfitViewModel}">
+      <v:ProfitPage />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:FriendsViewModel}">
+      <v:FriendsPage />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:AlertsViewModel}">
+      <v:AlertsPage />
+    </DataTemplate>
     <Style x:Key="NavIcon" TargetType="Path">
       <Setter Property="Width" Value="16" />
       <Setter Property="Height" Value="16" />
@@ -133,6 +142,12 @@
                   </Border>
                 </Grid>
               </RadioButton>
+              <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Profit / Loss" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Profit}">
+                <StackPanel Orientation="Horizontal">
+                  <Path Style="{StaticResource NavIcon}" Data="{StaticResource IcoProfit}" />
+                  <c:TrackedText Style="{StaticResource NavText}" Text="Profit / Loss" />
+                </StackPanel>
+              </RadioButton>
               <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Inventory" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Inventory}">
                 <StackPanel Orientation="Horizontal">
                   <Path Style="{StaticResource NavIcon}" Data="{StaticResource IcoInventory}" />
@@ -143,6 +158,18 @@
                 <StackPanel Orientation="Horizontal">
                   <Path Style="{StaticResource NavIcon}" Data="{StaticResource IcoMarket}" />
                   <c:TrackedText Style="{StaticResource NavText}" Text="Market" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Friends" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Friends}">
+                <StackPanel Orientation="Horizontal">
+                  <Path Style="{StaticResource NavIcon}" Data="{StaticResource IcoFriends}" />
+                  <c:TrackedText Style="{StaticResource NavText}" Text="Friends" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Alerts" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Alerts}">
+                <StackPanel Orientation="Horizontal">
+                  <Path Style="{StaticResource NavIcon}" Data="{StaticResource IcoAlerts}" />
+                  <c:TrackedText Style="{StaticResource NavText}" Text="Alerts" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Lookup" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Lookup}">
@@ -161,6 +188,14 @@
           </DockPanel>
         </Border>
         <ContentPresenter Grid.Column="1" Content="{Binding Current}" />
+        <Border Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,24,14" MaxWidth="520"
+                Background="{StaticResource Popup}" BorderBrush="{StaticResource LineStrong}" BorderThickness="1" Padding="14,9"
+                Visibility="{Binding Flash, Converter={StaticResource Vis}}">
+          <StackPanel Orientation="Horizontal">
+            <Ellipse Style="{StaticResource Dot}" Tag="{Binding FlashKind}" Margin="0,0,10,0" />
+            <TextBlock Style="{StaticResource StatusText}" Tag="{Binding FlashKind}" Text="{Binding Flash}" />
+          </StackPanel>
+        </Border>
       </Grid>
 
       <!-- Status bar -->

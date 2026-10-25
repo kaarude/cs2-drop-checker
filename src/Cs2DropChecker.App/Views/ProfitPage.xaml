@@ -1,0 +1,211 @@
+<UserControl x:Class="Cs2DropChecker.App.Views.ProfitPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Cs2DropChecker.App.Controls">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+    <StackPanel Margin="24,18,24,20">
+      <Grid Margin="0,0,0,14">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <c:TrackedText Style="{StaticResource H1}" Text="Profit / Loss" VerticalAlignment="Center" />
+          <c:TrackedText Style="{StaticResource MutedText}" Margin="18,4,0,0" Text="{Binding KeyNote}" />
+        </StackPanel>
+        <Button Style="{StaticResource GhostButton}" Content="Recalculate" Height="32" HorizontalAlignment="Right" Command="{Binding RefreshCommand}" />
+      </Grid>
+
+      <UniformGrid Columns="4" Margin="0,0,-12,0">
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="Lifetime" FontSize="10.5" />
+              <TextBlock Style="{StaticResource TrendValue}" Tag="{Binding HeadlineTrend}" Text="{Binding Headline}" FontSize="19" FontWeight="Bold"
+                         TextTrimming="CharacterEllipsis" Margin="0,6,0,4" />
+              <TextBlock Style="{StaticResource Note}" Text="{Binding LifetimeSub}" FontSize="10.5" />
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="This week" FontSize="10.5" />
+              <TextBlock Style="{StaticResource TrendValue}" Tag="{Binding WeekTrend}" Text="{Binding Week}" FontSize="26" FontWeight="Bold" Margin="0,3,0,1" />
+              <c:TrackedText Style="{StaticResource Sub}" Text="{Binding WeekSub}" FontSize="10" />
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="This month" FontSize="10.5" />
+              <TextBlock Style="{StaticResource TrendValue}" Tag="{Binding MonthTrend}" Text="{Binding Month}" FontSize="26" FontWeight="Bold" Margin="0,3,0,1" />
+              <c:TrackedText Style="{StaticResource Sub}" Text="{Binding MonthSub}" FontSize="10" />
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="ROI" FontSize="10.5" />
+              <TextBlock Style="{StaticResource TrendValue}" Tag="{Binding RoiTrend}" Text="{Binding Roi}" FontSize="26" FontWeight="Bold" Margin="0,3,0,1" />
+              <c:TrackedText Style="{StaticResource Sub}" Text="{Binding RoiSub}" FontSize="10" />
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+      </UniformGrid>
+
+      <UniformGrid Columns="2" Margin="0,12,-12,0">
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <StackPanel Margin="15,12,15,12">
+            <c:TrackedText Style="{StaticResource Lbl}" Text="Best opening" FontSize="10.5" />
+            <TextBlock Style="{StaticResource TrendValue}" Tag="up" Text="{Binding Best}" FontSize="19" FontWeight="Bold" Margin="0,4,0,2" />
+            <TextBlock Style="{StaticResource Note}" Text="{Binding BestSub}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+          </StackPanel>
+        </c:CutBorder>
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <StackPanel Margin="15,12,15,12">
+            <c:TrackedText Style="{StaticResource Lbl}" Text="Worst opening" FontSize="10.5" />
+            <TextBlock Style="{StaticResource TrendValue}" Tag="down" Text="{Binding Worst}" FontSize="19" FontWeight="Bold" Margin="0,4,0,2" />
+            <TextBlock Style="{StaticResource Note}" Text="{Binding WorstSub}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+          </StackPanel>
+        </c:CutBorder>
+      </UniformGrid>
+
+      <TextBlock Style="{StaticResource Note}" Text="{Binding Incomplete}" Foreground="{StaticResource Warn}" Margin="2,12,0,0"
+                 Visibility="{Binding Incomplete, Converter={StaticResource Vis}}" />
+
+      <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+        <StackPanel Margin="16,12,16,10">
+          <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+            <c:TrackedText Style="{StaticResource CardHead}" Text="By case" />
+            <c:TrackedText Style="{StaticResource MutedText}" Text="Only fully priced openings count" Margin="14,0,0,0" FontSize="10" />
+          </StackPanel>
+          <Border BorderBrush="{StaticResource LineSoft}" BorderThickness="0,0,0,1" Height="28">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="80" />
+              </Grid.ColumnDefinitions>
+              <c:TrackedText Style="{StaticResource ColHead}" Text="Case" />
+              <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="Opened" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Spent" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="Got" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="4" Style="{StaticResource ColHead}" Text="Net" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="5" Style="{StaticResource ColHead}" Text="ROI" HorizontalAlignment="Right" />
+            </Grid>
+          </Border>
+          <ItemsControl ItemsSource="{Binding Cases}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Height="32">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="80" />
+                      <ColumnDefinition Width="110" />
+                      <ColumnDefinition Width="110" />
+                      <ColumnDefinition Width="110" />
+                      <ColumnDefinition Width="80" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource Cell}" Text="{Binding Name}" Foreground="{StaticResource Text}" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding Count}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource Cell}" Text="{Binding Spent}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding Returned}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="4" Style="{StaticResource TrendValue}" Tag="{Binding Trend}" Text="{Binding Net}" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" FontSize="12" />
+                    <TextBlock Grid.Column="5" Style="{StaticResource TrendValue}" Tag="{Binding Trend}" Text="{Binding Roi}" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Style="{StaticResource Note}" Margin="2,10,0,4" Visibility="{Binding Cases.Count, Converter={StaticResource Vis}, ConverterParameter=!}"
+                     Text="Nothing to compare yet. Openings show up here once the case, key and item are priced." />
+        </StackPanel>
+      </c:CutBorder>
+
+      <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+        <StackPanel Margin="16,12,16,10">
+          <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+            <c:TrackedText Style="{StaticResource CardHead}" Text="Openings" />
+            <c:TrackedText Style="{StaticResource MutedText}" Text="Newest first · cost uses the case and key price when it was opened" Margin="14,0,0,0" FontSize="10" />
+          </StackPanel>
+          <Border BorderBrush="{StaticResource LineSoft}" BorderThickness="0,0,0,1" Height="28">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3" />
+                <ColumnDefinition Width="92" />
+                <ColumnDefinition Width="*" MinWidth="160" />
+                <ColumnDefinition Width="210" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="86" />
+                <ColumnDefinition Width="110" />
+              </Grid.ColumnDefinitions>
+              <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="When" Margin="9,0,0,0" />
+              <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Item" />
+              <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="Case" />
+              <c:TrackedText Grid.Column="4" Style="{StaticResource ColHead}" Text="Case" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="5" Style="{StaticResource ColHead}" Text="Key" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="6" Style="{StaticResource ColHead}" Text="Item" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="7" Style="{StaticResource ColHead}" Text="Net" HorizontalAlignment="Right" />
+            </Grid>
+          </Border>
+          <ItemsControl ItemsSource="{Binding Openings}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Height="38">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="3" />
+                      <ColumnDefinition Width="92" />
+                      <ColumnDefinition Width="*" MinWidth="160" />
+                      <ColumnDefinition Width="210" />
+                      <ColumnDefinition Width="80" />
+                      <ColumnDefinition Width="70" />
+                      <ColumnDefinition Width="86" />
+                      <ColumnDefinition Width="110" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" Margin="0,8" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding When}" Margin="9,0,0,0" FontSize="11.5" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,10,0">
+                      <Image c:Img.DecodeWidth="96" c:Img.Icon="{Binding IconUrl}" Width="42" Height="30" Margin="0,0,10,0" Stretch="Uniform" />
+                      <TextBlock Style="{StaticResource Cell}" Text="{Binding Name}" Foreground="{StaticResource Text}" FontWeight="SemiBold" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding Container}" Margin="0,0,10,0"
+                               Visibility="{Binding NeedsCase, Converter={StaticResource Vis}, ConverterParameter=!}" />
+                    <Grid Grid.Column="3" Margin="0,0,10,0" Height="26" Visibility="{Binding NeedsCase, Converter={StaticResource Vis}}"
+                          ToolTip="Recorded before cost tracking. Pick the case to estimate it with today's case and key price.">
+                      <ComboBox Style="{StaticResource HudCombo}" Height="26" FontSize="11.5"
+                                ItemsSource="{Binding DataContext.KnownContainers, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                SelectedItem="{Binding Pick}" />
+                      <TextBlock Text="Pick the case…" Foreground="{StaticResource Dim}" FontSize="11.5" Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                                 Visibility="{Binding Pick, Converter={StaticResource Vis}, ConverterParameter=!}" />
+                    </Grid>
+                    <TextBlock Grid.Column="4" Style="{StaticResource Cell}" Text="{Binding CaseText}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="5" Style="{StaticResource Cell}" Text="{Binding KeyText}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="6" Style="{StaticResource Cell}" Text="{Binding ItemPriceText}" HorizontalAlignment="Right" />
+                    <StackPanel Grid.Column="7" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                      <Border BorderBrush="#668fb8ff" BorderThickness="1" Padding="4,0" Margin="0,0,6,0" VerticalAlignment="Center"
+                              Visibility="{Binding Estimate, Converter={StaticResource Vis}}" ToolTip="Case added afterwards: costed at today's prices">
+                        <c:TrackedText Text="est." FontSize="9.5" Spacing="0.6" Foreground="{StaticResource Late}" Upper="False" />
+                      </Border>
+                      <TextBlock Style="{StaticResource TrendValue}" Tag="{Binding Trend}" Text="{Binding NetText}" FontWeight="Bold" FontSize="12" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Style="{StaticResource Note}" Margin="2,10,0,4" Visibility="{Binding Total, Converter={StaticResource Vis}, ConverterParameter=!}"
+                     Text="No case or capsule openings yet. Openings already in your drop history are added automatically; new ones are costed with the case and key price at the moment they arrive." />
+        </StackPanel>
+      </c:CutBorder>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

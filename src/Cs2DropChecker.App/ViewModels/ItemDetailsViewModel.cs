@@ -10,9 +10,10 @@ public sealed record SellRow(string Name, string ListPrice, string Fee, string N
 /// <summary>Detail panel for one item: price, where it pays most to sell, and shortcuts to share or set an alert.</summary>
 public sealed class ItemDetailsViewModel
 {
-    public ItemDetailsViewModel(InventoryItem item, PriceQuote? now, SellAdvice advice, DropRecord? drop = null)
+    public ItemDetailsViewModel(InventoryItem item, PriceQuote? now, SellAdvice advice, DropRecord? drop = null, bool own = true)
     {
         Item = item;
+        CanShare = own;
         Drop = drop;
         IconUrl = item.IconUrl;
         Name = item.Name;
@@ -41,6 +42,7 @@ public sealed class ItemDetailsViewModel
     public InventoryItem Item { get; }
     public DropRecord? Drop { get; }
     public bool IsDrop => Drop is not null;
+    public bool CanShare { get; }
     public string IconUrl { get; }
     public string Name { get; }
     public string Wear { get; }
@@ -56,6 +58,7 @@ public sealed class ItemDetailsViewModel
     public string Note { get; }
     public string FeeNote => SellAdvisor.FeeNote;
 
-    public static ItemDetailsViewModel For(AppServices s, InventoryItem item, DropRecord? drop = null) =>
-        new(item, s.Prices.GetCached(item.MarketHashName), SellAdvisor.For(s.Prices, item), drop);
+    /// <summary>Set <paramref name="own"/> to false for someone else's item (Lookup): no share card for it.</summary>
+    public static ItemDetailsViewModel For(AppServices s, InventoryItem item, DropRecord? drop = null, bool own = true) =>
+        new(item, s.Prices.GetCached(item.MarketHashName), SellAdvisor.For(s.Prices, item), drop, own);
 }

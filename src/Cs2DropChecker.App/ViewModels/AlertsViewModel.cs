@@ -27,7 +27,7 @@ public sealed partial class AlertRow : ObservableObject
         IconUrl = r.IconUrl ?? "";
         Rule2 = AlertEvaluator.Describe(r);
         var current = r.IsInventory ? total : now?.Price;
-        Now = current is { } c ? "Now " + Money.Format(c, r.Currency) : "No price yet";
+        Now = current is { } c ? "Now " + Money.Format(c, r.Currency) : r.IsInventory ? "Inventory not loaded" : "No price yet";
         State = !r.Armed ? "Fired " + When.Ago(r.FiredAt) + " · waits until the price moves back" : "Watching";
         StateKind = r.Armed ? "ok" : "warn";
         Enabled = r.Enabled;
