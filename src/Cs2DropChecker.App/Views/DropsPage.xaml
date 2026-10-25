@@ -1,0 +1,50 @@
+<UserControl x:Class="Cs2DropChecker.App.Views.DropsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Cs2DropChecker.App.Controls">
+  <Grid Margin="24,18,24,20">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <Grid Margin="0,0,0,14">
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <c:TrackedText Style="{StaticResource H1}" Text="Drops" VerticalAlignment="Center" />
+        <c:TrackedText Style="{StaticResource MutedText}" Text="{Binding Summary}" Margin="18,4,0,0" />
+      </StackPanel>
+      <Button Style="{StaticResource PrimaryButton}" Content="Refresh now" HorizontalAlignment="Right"
+              Tag="{Binding DataContext.RefreshKey, RelativeSource={RelativeSource AncestorType=Window}}"
+              Command="{Binding DataContext.RefreshNowCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+    </Grid>
+    <c:CutBorder Grid.Row="1" Style="{StaticResource HudCard}">
+      <Grid Margin="16,12,16,6">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Margin="0,0,0,8">
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <c:TrackedText Style="{StaticResource CardHead}" Text="History" Margin="0,0,16,0" />
+            <ItemsControl ItemsSource="{Binding Filters}" ItemsPanel="{StaticResource Horizontal}" Focusable="False">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <RadioButton Style="{StaticResource Chip}" Content="{Binding Display}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                               Command="{Binding DataContext.SelectFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               CommandParameter="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+          <TextBox Style="{StaticResource HudTextBox}" Tag="Search items" Width="220" Height="28" FontSize="12" HorizontalAlignment="Right"
+                   Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=150}" />
+        </Grid>
+        <ContentControl Grid.Row="1" Template="{StaticResource DropHeader}" Focusable="False" Margin="0,0,10,0" />
+        <ListBox Grid.Row="2" Style="{StaticResource PlainList}" ItemsSource="{Binding Rows}" ItemTemplate="{StaticResource DropRow}" />
+        <TextBlock Grid.Row="2" Style="{StaticResource Note}" Margin="4,16" VerticalAlignment="Top"
+                   Visibility="{Binding Rows, Converter={StaticResource Vis}, ConverterParameter=!}"
+                   Text="No items here yet. The app records weekly drops, case openings, trade-ups and purchases from the moment it starts watching." />
+      </Grid>
+    </c:CutBorder>
+  </Grid>
+</UserControl>

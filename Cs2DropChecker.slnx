@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Cs2DropChecker.Core/Cs2DropChecker.Core.csproj" />
+    <Project Path="src/Cs2DropChecker.App/Cs2DropChecker.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cs2DropChecker.Core.Tests/Cs2DropChecker.Core.Tests.csproj" />
+  </Folder>
+</Solution>

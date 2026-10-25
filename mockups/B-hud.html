@@ -1,0 +1,84 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1600px;height:960px;overflow:hidden;background:#0d0e10}
+.caption{height:60px;display:flex;align-items:baseline;gap:16px;padding:19px 26px 0;color:#eceff3;font-family:'Segoe UI',sans-serif;background:#121317;border-bottom:1px solid #24262b}
+.caption b{font-size:19px;font-weight:600;letter-spacing:.2px}
+.caption span{font-size:13px;color:#8d939b}
+.scene{position:relative;width:1600px;height:900px;overflow:hidden}
+.sky{position:absolute;left:0;right:0;top:0;height:470px;background:linear-gradient(180deg,#5f8fb8 0%,#9dbdd2 50%,#e3d3b0 100%)}
+.far{position:absolute;background:linear-gradient(180deg,#d9c7a2,#c7ad80)}
+.f1{left:700px;top:330px;width:250px;height:380px}
+.f2{left:940px;top:390px;width:150px;height:320px;background:linear-gradient(180deg,#cdb68a,#b89a6c)}
+.wall{position:absolute}
+.w1{left:-60px;top:150px;width:560px;height:560px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.13) 0 2px,transparent 2px 44px),repeating-linear-gradient(90deg,rgba(80,52,20,.10) 0 2px,transparent 2px 88px),linear-gradient(90deg,#c9a26b,#d8b67f 60%,#b78f5a)}
+.w2{left:498px;top:260px;width:230px;height:450px;background:repeating-linear-gradient(0deg,rgba(40,25,10,.15) 0 2px,transparent 2px 44px),linear-gradient(90deg,#9c7646,#8a6639)}
+.door{position:absolute;left:560px;top:430px;width:118px;height:280px;border-radius:59px 59px 0 0;background:linear-gradient(180deg,#24180c,#0f0905)}
+.w3{right:-40px;top:110px;width:620px;height:600px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.12) 0 2px,transparent 2px 50px),linear-gradient(270deg,#b8915c,#d1ad77 45%,#c39c66)}
+.win{position:absolute;width:70px;height:96px;background:linear-gradient(#3a2a18,#1c130a);border:6px solid #a7834f}
+.ground{position:absolute;left:0;right:0;top:700px;bottom:0;background:repeating-linear-gradient(100deg,rgba(60,40,15,.08) 0 3px,transparent 3px 22px),linear-gradient(180deg,#b28a57,#94703f 45%,#6d5230)}
+.crate{position:absolute;width:118px;height:104px;background:linear-gradient(45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),#8a6a3d;border:8px solid #5e4322}
+.crate.small{width:80px;height:66px;border-width:6px}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 75% 70% at 50% 50%,transparent 55%,rgba(0,0,0,.38))}
+.h-radar{position:absolute;left:16px;top:16px;width:210px;height:210px;background:rgba(14,16,18,.55);border:1px solid rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.h-radar i{position:absolute;background:rgba(190,170,130,.35)}
+.r1{left:30px;top:20px;width:40px;height:150px}.r2{left:30px;top:130px;width:150px;height:40px}.r3{left:120px;top:40px;width:40px;height:100px}
+.h-radar b{position:absolute;left:100px;top:142px;width:9px;height:9px;border-radius:50%;background:#5ec8ff;box-shadow:0 0 6px #5ec8ff}
+.h-money{position:absolute;left:20px;top:236px;font:600 22px Bahnschrift,'Segoe UI';color:#b9e08f;text-shadow:0 1px 2px #000}
+.h-score{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:4px;font:600 20px Bahnschrift,'Segoe UI';color:#fff}
+.h-score span{padding:4px 14px;background:rgba(12,14,16,.6)}
+.h-score .ct{color:#9fc0ff;border-bottom:3px solid #5d79ae}.h-score .tt{color:#f2c27a;border-bottom:3px solid #de9b35}
+.h-kill{position:absolute;right:16px;top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;font:600 13px 'Segoe UI'}
+.kf{display:flex;gap:10px;padding:5px 10px;background:rgba(10,10,10,.55);color:#fff}
+.kf.me{border:1px solid #d33}
+.kf .gun{color:#ddd;font-weight:400}
+.ctn{color:#9fc0ff}.tn{color:#f2c27a}
+.h-health{position:absolute;left:24px;bottom:20px;display:flex;align-items:center;gap:10px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-health svg{width:22px;height:22px}
+.h-ammo{position:absolute;right:28px;bottom:20px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-ammo small{font-size:18px;color:#cfcfcf}
+.xhair{position:absolute;left:800px;top:450px}
+.xhair i{position:absolute;background:#5cff6a;box-shadow:0 0 1px #000}
+.xhair .a{left:-1px;top:-14px;width:2px;height:9px}.xhair .b{left:-1px;top:5px;width:2px;height:9px}.xhair .c{left:-14px;top:-1px;width:9px;height:2px}.xhair .d{left:5px;top:-1px;width:9px;height:2px}
+.anno{position:absolute;font:600 10.5px 'Segoe UI';letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.8);text-shadow:0 1px 2px rgba(0,0,0,.9)}
+.stackB{position:absolute;right:24px;top:176px;width:450px;display:flex;flex-direction:column;gap:10px;font-family:Bahnschrift,'Segoe UI',sans-serif}
+.hb{position:relative;font-family:Bahnschrift,'Segoe UI',sans-serif;padding:1px;background:linear-gradient(120deg,rgba(222,155,53,.95),rgba(222,155,53,.25) 45%,rgba(93,121,174,.6));clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+.hb.gold{background:linear-gradient(120deg,#f5cf6a,rgba(228,174,57,.35) 50%,#e4ae39)}
+.hb .in{position:relative;clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,13px 100%,0 calc(100% - 13px));background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px),linear-gradient(90deg,rgba(9,14,22,.92),rgba(13,21,34,.84));color:#e9edf2}
+.hb .hdr{display:flex;align-items:center;gap:10px;height:24px;padding-right:14px;font-size:11.5px;letter-spacing:2px;text-transform:uppercase;font-weight:600;border-bottom:1px solid rgba(222,155,53,.25);white-space:nowrap}
+.hb .tag{height:100%;display:flex;align-items:center;padding:0 22px 0 10px;background:#de9b35;color:#11161d;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.hb.gold .tag{background:#e4ae39}
+.hb .evt{color:#de9b35}
+.hb.gold .evt{color:#f5cf6a}
+.hb .time{margin-left:auto;color:#7f8ea3;letter-spacing:1px}
+.hb .body{display:flex;align-items:center;gap:12px;padding:10px 14px 10px 12px}
+.hb .img{flex:none;width:98px;height:68px;display:grid;place-items:center;background:linear-gradient(180deg,rgba(93,121,174,.14),rgba(93,121,174,.02));border:1px solid rgba(93,121,174,.28)}
+.hb .img img{width:98px;height:73px;object-fit:contain}
+.hb .info{flex:1;min-width:0}
+.hb .wpn{font-size:12px;letter-spacing:1.5px;color:#9fb0c6;text-transform:uppercase}
+.hb .skin{font-family:'Bahnschrift SemiCondensed',Bahnschrift,sans-serif;font-size:22px;font-weight:700;font-stretch:87.5%;letter-spacing:.5px;text-transform:uppercase;line-height:1.05;white-space:nowrap}
+.hb .row{white-space:nowrap;display:flex;gap:6px;margin-top:5px;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.hb .rar{padding:1px 6px;background:var(--r);color:#0d1118;font-weight:700}
+.hb .chip{padding:1px 6px;border:1px solid rgba(255,255,255,.2);color:#c9d2de}
+.hb .chip.st{border-color:#cf6a32;color:#ff9b5e}
+.hb .px{flex:none;text-align:right;align-self:flex-start;padding-top:4px}
+.hb .px .v{font-size:28px;font-weight:700;color:#f3b350;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.hb .px .src{font-size:10.5px;letter-spacing:1.5px;color:#7f8ea3;text-transform:uppercase}
+.hb .warn{display:flex;gap:6px;align-items:center;padding:0 14px 10px 122px;margin-top:-4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#f3b350}
+.hb .bar{height:3px;background:rgba(255,255,255,.06)}.hb .bar i{display:block;height:100%;background:#5d79ae}
+.hb.fading{opacity:.6}
+.tvB{position:absolute!important;left:24px;top:304px;width:340px}
+.tvB .bd{padding:12px 16px 14px}
+.tvB .big{font-size:40px;font-weight:700;color:#f3b350;letter-spacing:.5px;font-variant-numeric:tabular-nums;line-height:1}
+.tvB .delta{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#8fd19a;margin-top:6px}
+.tvB .tbl{margin-top:12px;display:flex;flex-direction:column}
+.tvB .tbl div{display:grid;grid-template-columns:1fr 40px 96px;padding:5px 0;border-top:1px solid rgba(93,121,174,.18);font-size:13px;text-transform:uppercase;letter-spacing:.8px}
+.tvB .tbl span:nth-child(2){color:#7f8ea3;text-align:right}
+.tvB .tbl b{text-align:right;font-weight:600}
+.tvB .src{margin-top:10px;font-size:10.5px;letter-spacing:1.5px;color:#7f8ea3;text-transform:uppercase}</style></head><body><div class="caption"><b>B · CS2 HUD (orange / blue)</b><span>Angular panels, Bahnschrift condensed type, CS orange prices, CT blue timer bar.</span></div><div class="scene"><div class="sky"></div><div class="far f1"></div><div class="far f2"></div>
+<div class="wall w3"><i class="win" style="left:120px;top:90px"></i><i class="win" style="left:300px;top:90px"></i><i class="win" style="left:120px;top:260px"></i><i class="win" style="left:300px;top:260px"></i></div>
+<div class="wall w1"></div><div class="wall w2"></div><div class="door"></div><div class="ground"></div>
+<div class="crate" style="left:930px;top:612px"></div><div class="crate small" style="left:1040px;top:650px"></div><div class="vignette"></div>
+<div class="h-radar"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b></b></div><div class="h-money">$ 4 750</div>
+<div class="h-score"><span class="ct">7</span><span class="clock">1:32</span><span class="tt">5</span></div>
+<div class="h-kill"><div class="kf me"><span class="ctn">you</span><span class="gun">AK-47</span><span class="tn">Kova</span></div><div class="kf"><span class="tn">Mira</span><span class="gun">AWP</span><span class="ctn">Dex</span></div></div>
+<div class="h-health"><svg viewBox="0 0 20 20"><path d="M7 1h6v6h6v6h-6v6H7v-6H1V7h6z" fill="#f3f3f3"/></svg>100<svg viewBox="0 0 20 20" style="margin-left:14px"><path d="M10 1l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V4z" fill="#f3f3f3"/></svg>87</div>
+<div class="h-ammo">30 <small>/ 90</small></div><div class="xhair"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div><div class="anno" style="right:24px;top:154px;width:450px;text-align:right">Drop popups · newest on top · fade after 10 s</div><div class="stackB"><div class="hb gold" style="--r:#e4ae39"><div class="in"><div class="hdr"><span class="tag">★ Rare special</span><span class="evt">Trade-up</span><span class="time">just now</span></div><div class="body"><div class="img"><img src="assets/karambit.png"></div><div class="info"><div class="wpn">★ Karambit</div><div class="skin">Doppler</div><div class="row"><span class="rar">Covert</span><span class="chip">FN 0.0112</span></div></div><div class="px"><div class="v">€1,376.00</div><div class="src">Src · Steam Market</div></div></div><div class="warn"><svg viewBox="0 0 16 16" width="12" height="12" style="flex:none"><circle cx="8" cy="8" r="6.8" fill="none" stroke="#f3b350" stroke-width="1.5"/><rect x="7.25" y="7" width="1.5" height="5" fill="#f3b350"/><rect x="7.25" y="3.8" width="1.5" height="1.7" fill="#f3b350"/></svg>Phase not priced · may be worth more</div><div class="bar"><i style="width:96%"></i></div></div></div><div class="hb" style="--r:#eb4b4b"><div class="in"><div class="hdr"><span class="tag">Item acquired</span><span class="evt">Case opened</span><span class="time">3 s ago</span></div><div class="body"><div class="img"><img src="assets/m4.png"></div><div class="info"><div class="wpn">M4A4</div><div class="skin">Temukau</div><div class="row"><span class="rar">Covert</span><span class="chip">FT 0.1693</span><span class="chip st">StatTrak™</span></div></div><div class="px"><div class="v">€34.66</div><div class="src">Src · Skinport</div></div></div><div class="warn"><svg viewBox="0 0 16 16" width="12" height="12" style="flex:none"><circle cx="8" cy="8" r="6.8" fill="none" stroke="#f3b350" stroke-width="1.5"/><rect x="7.25" y="7" width="1.5" height="5" fill="#f3b350"/><rect x="7.25" y="3.8" width="1.5" height="1.7" fill="#f3b350"/></svg>2 stickers · may be worth more</div><div class="bar"><i style="width:66%"></i></div></div></div><div class="hb fading" style="--r:#b0c3d9"><div class="in"><div class="hdr"><span class="tag">Item acquired</span><span class="evt">Weekly drop</span><span class="time">7 s ago</span></div><div class="body"><div class="img"><img src="assets/p250.png"></div><div class="info"><div class="wpn">P250</div><div class="skin">Sand Dune</div><div class="row"><span class="rar">Consumer</span><span class="chip">FT 0.2871</span></div></div><div class="px"><div class="v">€0.03</div><div class="src">Src · Skinport</div></div></div><div class="bar"><i style="width:28%"></i></div></div></div></div><div class="anno" style="left:24px;top:284px">Total value · Ctrl+Shift+V or tray menu</div><div class="hb tvB"><div class="in"><div class="hdr"><span class="tag">Inventory value</span><span class="time">198/214 priced</span></div><div class="bd"><div class="big">€2,184.37</div><div class="delta">▲ €1,410.69 · 3 new items today</div><div class="tbl"><div><span>Knives &amp; gloves</span><span>2</span><b>€1,813.76</b></div><div><span>Rifles</span><span>22</span><b>€186.40</b></div><div><span>Pistols</span><span>31</span><b>€58.92</b></div><div><span>Cases &amp; capsules</span><span>58</span><b>€31.55</b></div><div><span>Stickers &amp; other</span><span>85</span><b>€93.74</b></div></div><div class="src">Src · Skinport 3 min · Steam 12 min</div></div></div></div></div></body></html>

@@ -1,0 +1,53 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1600px;height:960px;overflow:hidden}
+body{background:radial-gradient(ellipse at 70% 30%,#22324a,#0c121b 55%,#06090d);font-family:Bahnschrift,'Segoe UI',sans-serif;color:#e6ebf1}
+.caption{height:60px;display:flex;align-items:baseline;gap:16px;padding:19px 26px 0;color:#eceff3;background:#121317;border-bottom:1px solid #24262b;font-family:'Segoe UI',sans-serif}
+.caption b{font-size:19px;font-weight:600}.caption span{font-size:13px;color:#8d939b}
+.desk{display:flex;gap:40px;justify-content:center;padding-top:52px}
+.lab{font:600 11px 'Segoe UI';letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:10px}
+.wz{width:740px;height:700px;display:flex;flex-direction:column;background:#0b1119;border:1px solid rgba(93,121,174,.3);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.tb{height:38px;display:flex;align-items:center;gap:10px;padding-left:14px;background:#070b11;border-bottom:1px solid rgba(222,155,53,.35);font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:600}
+.tb .logo{width:14px;height:14px;background:#de9b35;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.tb .x{margin-left:auto;width:46px;text-align:center;color:#8fa0b6;letter-spacing:0}
+.bd{flex:1;display:flex;min-height:0}
+.rail{width:190px;background:#070b11;border-right:1px solid rgba(93,121,174,.2);padding:20px 0}
+.st{display:flex;align-items:center;gap:10px;height:44px;padding:0 16px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:#6f7f95;position:relative}
+.st b{width:22px;height:22px;display:grid;place-items:center;border:1px solid rgba(93,121,174,.45);font-size:11px;color:#8fa0b6}
+.st.done{color:#8fd19a}.st.done b{border-color:#8fd19a;color:#8fd19a}
+.st.on{color:#fff;background:linear-gradient(90deg,rgba(222,155,53,.2),transparent)}
+.st.on::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#de9b35}
+.st.on b{background:#de9b35;border-color:#de9b35;color:#0b1119;font-weight:700}
+.st small{display:block;font-size:9.5px;letter-spacing:1px;color:#6f7f95;margin-top:1px}
+.ct{flex:1;padding:28px 30px;display:flex;flex-direction:column;gap:16px}
+h2{font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+p{font-size:13.5px;line-height:1.55;color:#b8c4d4;letter-spacing:.2px}
+.inp{height:40px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#070b11;border:1px solid rgba(222,155,53,.55);font-size:14px;letter-spacing:.3px}
+.small{font-size:11px;letter-spacing:.7px;color:#6f7f95;text-transform:uppercase}
+.pc{display:flex;gap:16px;align-items:center;padding:14px;background:linear-gradient(180deg,rgba(17,26,40,.96),rgba(12,19,30,.96));border:1px solid rgba(143,209,154,.45)}
+.av{width:56px;height:56px;display:grid;place-items:center;background:linear-gradient(135deg,#3a2a14,#1c1408);border:1px solid rgba(222,155,53,.6);font:700 20px Bahnschrift;color:#f3b350}
+.pn{font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.pm{font-size:11.5px;letter-spacing:.7px;color:#8fa0b6;text-transform:uppercase;margin-top:3px;line-height:1.5}
+.pm .ok{color:#8fd19a}
+.btns{display:flex;gap:10px;margin-top:auto}
+.bp{height:40px;display:flex;align-items:center;gap:8px;padding:0 20px;background:#de9b35;color:#0b1119;font-weight:700;font-size:13px;letter-spacing:1.6px;text-transform:uppercase;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.bs{height:40px;display:flex;align-items:center;padding:0 18px;border:1px solid rgba(93,121,174,.45);color:#c9d2de;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase}
+.sp{flex:1}
+.ul{display:flex;flex-direction:column;gap:9px}
+.li{display:flex;gap:10px;font-size:13px;line-height:1.45;color:#c9d2de}
+.li i{flex:none;width:18px;height:18px;display:grid;place-items:center;font-style:normal;font-size:11px;color:#0b1119;background:#8fd19a;margin-top:1px}
+.li.w i{background:#f3b350}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmp div{padding:10px 12px;border:1px solid rgba(93,121,174,.25);background:#070b11;font-size:12px;line-height:1.5;color:#9fb0c6}
+.cmp b{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#eef2f7;margin-bottom:2px}
+.cmp .g b{color:#8fd19a}
+.stm{display:flex;align-items:center;gap:8px}
+.stm svg{width:18px;height:18px}</style></head><body><div class="caption"><b>First-run setup (HUD theme)</b><span>Runs on first launch for each Windows user. Steps: profile (required), instant trades via Steam sign-in (optional), basics.</span></div><div class="desk"><div><div class="lab">Step 1 · first launch</div><div class="wz"><div class="tb"><span class="logo"></span>CS2 Drop Checker · Setup<span class="x">✕</span></div><div class="bd"><div class="rail"><div class="st on"><b>1</b><span>Steam profile<small>Required</small></span></div><div class="st"><b>2</b><span>Instant trades<small>Optional</small></span></div><div class="st"><b>3</b><span>Basics<small>Currency, hotkeys</small></span></div></div><div class="ct">
+<h2>Who are you on Steam?</h2><p>Paste your Steam profile link, SteamID64 or custom profile name. The app only reads your public CS2 inventory.</p>
+<div class="inp">https://steamcommunity.com/id/katana_cs</div><div class="small">Accepted: steamcommunity.com/id/… · /profiles/7656119… · 17-digit SteamID64 · custom name</div>
+<div class="pc"><div class="av">KA</div><div><div class="pn">Katana</div><div class="pm">SteamID64 76561198•••••••42<br><span class="ok">✓ Inventory public · 214 CS2 items</span></div></div></div>
+<div class="small">Saved only on this PC, for your Windows user. Change it any time in Settings.</div>
+<div class="btns"><span class="bs">Not me</span><span class="sp"></span><span class="bp">This is me →</span></div></div></div></div></div><div><div class="lab">Step 2 · optional</div><div class="wz"><div class="tb"><span class="logo"></span>CS2 Drop Checker · Setup<span class="x">✕</span></div><div class="bd"><div class="rail"><div class="st done"><b>✓</b><span>Steam profile<small>Required</small></span></div><div class="st on"><b>2</b><span>Instant trades<small>Optional</small></span></div><div class="st"><b>3</b><span>Basics<small>Currency, hotkeys</small></span></div></div><div class="ct">
+<h2>See trades and purchases instantly</h2><p>Steam hides items you trade for or buy on the market from public view for 7 days. If you sign in, the app reads your own inventory the way you see it on Steam and catches them right away.</p>
+<div class="cmp"><div><b>Without sign-in</b>Drops, cases and trade-ups: instant<br>Trades and purchases: about 7 days late</div><div class="g"><b>With sign-in</b>Everything instant<br>Plus the price you actually paid on the market</div></div>
+<div class="ul"><div class="li"><i>✓</i>Steam's own login page opens in a built-in browser window. Steam Guard and QR login work as usual.</div><div class="li"><i>✓</i>The app never sees your password or login cookie. The login stays in that built-in browser, on this PC only, encrypted by Windows.</div><div class="li"><i>✓</i>Read-only: it only loads your own inventory. No trading, selling or listing. Sign out any time in Settings.</div><div class="li w"><i>!</i>Anyone with access to your Windows account could use the session. Skip this on a shared PC.</div></div>
+<div class="btns"><span class="bs">Skip for now</span><span class="sp"></span><span class="bp stm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#0b1119"/><circle cx="15.5" cy="8.5" r="3.2" fill="none" stroke="#0b1119" stroke-width="0"/><path d="M12 1a11 11 0 0 0-11 10.1l5.9 2.4a3.1 3.1 0 0 1 1.9-.5l2.6-3.8v-.1a4.2 4.2 0 1 1 4.2 4.2h-.1l-3.8 2.7a3.1 3.1 0 0 1-6.2.4L1.3 15A11 11 0 1 0 12 1z" fill="#de9b35"/></svg>Sign in with Steam</span></div></div></div></div></div></div></body></html>

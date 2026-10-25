@@ -1,0 +1,100 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1600px;height:960px;overflow:hidden;background:#0d0e10}
+.caption{height:60px;display:flex;align-items:baseline;gap:16px;padding:19px 26px 0;color:#eceff3;font-family:'Segoe UI',sans-serif;background:#121317;border-bottom:1px solid #24262b}
+.caption b{font-size:19px;font-weight:600;letter-spacing:.2px}
+.caption span{font-size:13px;color:#8d939b}
+.scene{position:relative;width:1600px;height:900px;overflow:hidden}
+.sky{position:absolute;left:0;right:0;top:0;height:470px;background:linear-gradient(180deg,#5f8fb8 0%,#9dbdd2 50%,#e3d3b0 100%)}
+.far{position:absolute;background:linear-gradient(180deg,#d9c7a2,#c7ad80)}
+.f1{left:700px;top:330px;width:250px;height:380px}
+.f2{left:940px;top:390px;width:150px;height:320px;background:linear-gradient(180deg,#cdb68a,#b89a6c)}
+.wall{position:absolute}
+.w1{left:-60px;top:150px;width:560px;height:560px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.13) 0 2px,transparent 2px 44px),repeating-linear-gradient(90deg,rgba(80,52,20,.10) 0 2px,transparent 2px 88px),linear-gradient(90deg,#c9a26b,#d8b67f 60%,#b78f5a)}
+.w2{left:498px;top:260px;width:230px;height:450px;background:repeating-linear-gradient(0deg,rgba(40,25,10,.15) 0 2px,transparent 2px 44px),linear-gradient(90deg,#9c7646,#8a6639)}
+.door{position:absolute;left:560px;top:430px;width:118px;height:280px;border-radius:59px 59px 0 0;background:linear-gradient(180deg,#24180c,#0f0905)}
+.w3{right:-40px;top:110px;width:620px;height:600px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.12) 0 2px,transparent 2px 50px),linear-gradient(270deg,#b8915c,#d1ad77 45%,#c39c66)}
+.win{position:absolute;width:70px;height:96px;background:linear-gradient(#3a2a18,#1c130a);border:6px solid #a7834f}
+.ground{position:absolute;left:0;right:0;top:700px;bottom:0;background:repeating-linear-gradient(100deg,rgba(60,40,15,.08) 0 3px,transparent 3px 22px),linear-gradient(180deg,#b28a57,#94703f 45%,#6d5230)}
+.crate{position:absolute;width:118px;height:104px;background:linear-gradient(45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),#8a6a3d;border:8px solid #5e4322}
+.crate.small{width:80px;height:66px;border-width:6px}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 75% 70% at 50% 50%,transparent 55%,rgba(0,0,0,.38))}
+.h-radar{position:absolute;left:16px;top:16px;width:210px;height:210px;background:rgba(14,16,18,.55);border:1px solid rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.h-radar i{position:absolute;background:rgba(190,170,130,.35)}
+.r1{left:30px;top:20px;width:40px;height:150px}.r2{left:30px;top:130px;width:150px;height:40px}.r3{left:120px;top:40px;width:40px;height:100px}
+.h-radar b{position:absolute;left:100px;top:142px;width:9px;height:9px;border-radius:50%;background:#5ec8ff;box-shadow:0 0 6px #5ec8ff}
+.h-money{position:absolute;left:20px;top:236px;font:600 22px Bahnschrift,'Segoe UI';color:#b9e08f;text-shadow:0 1px 2px #000}
+.h-score{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:4px;font:600 20px Bahnschrift,'Segoe UI';color:#fff}
+.h-score span{padding:4px 14px;background:rgba(12,14,16,.6)}
+.h-score .ct{color:#9fc0ff;border-bottom:3px solid #5d79ae}.h-score .tt{color:#f2c27a;border-bottom:3px solid #de9b35}
+.h-kill{position:absolute;right:16px;top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;font:600 13px 'Segoe UI'}
+.kf{display:flex;gap:10px;padding:5px 10px;background:rgba(10,10,10,.55);color:#fff}
+.kf.me{border:1px solid #d33}
+.kf .gun{color:#ddd;font-weight:400}
+.ctn{color:#9fc0ff}.tn{color:#f2c27a}
+.h-health{position:absolute;left:24px;bottom:20px;display:flex;align-items:center;gap:10px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-health svg{width:22px;height:22px}
+.h-ammo{position:absolute;right:28px;bottom:20px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-ammo small{font-size:18px;color:#cfcfcf}
+.xhair{position:absolute;left:800px;top:450px}
+.xhair i{position:absolute;background:#5cff6a;box-shadow:0 0 1px #000}
+.xhair .a{left:-1px;top:-14px;width:2px;height:9px}.xhair .b{left:-1px;top:5px;width:2px;height:9px}.xhair .c{left:-14px;top:-1px;width:9px;height:2px}.xhair .d{left:5px;top:-1px;width:9px;height:2px}
+.anno{position:absolute;font:600 10.5px 'Segoe UI';letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.8);text-shadow:0 1px 2px rgba(0,0,0,.9)}
+
+.corner{position:absolute;right:16px;top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.corner2{position:absolute;right:16px;top:430px}
+.anno2{position:absolute;font:600 10.5px 'Segoe UI';letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.9);text-align:right}
+.hc{position:relative;width:236px;height:356px;padding:1px;flex:none;font-family:Bahnschrift,'Segoe UI',sans-serif;color:#eef2f7;background:linear-gradient(160deg,color-mix(in srgb,var(--r) 85%,#fff 0%),rgba(93,121,174,.35) 55%,color-mix(in srgb,var(--r) 70%,transparent));clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px));filter:drop-shadow(0 14px 26px rgba(0,0,0,.45))}
+.hc.gold{background:linear-gradient(160deg,#f5cf6a,rgba(228,174,57,.35) 55%,#e4ae39)}
+.hc .in{position:relative;width:100%;height:100%;overflow:hidden;clip-path:polygon(0 0,calc(100% - 15px) 0,100% 15px,100% 100%,15px 100%,0 calc(100% - 15px));background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px),radial-gradient(120% 62% at 50% 0%,color-mix(in srgb,var(--r) 48%,transparent),transparent 72%),linear-gradient(180deg,rgba(12,19,30,.97),rgba(8,13,21,.97))}
+.hc.gold .in::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,236,170,.09) 45%,transparent 60%)}
+.hc .top{position:absolute;top:0;left:0;right:0;height:24px;display:flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;white-space:nowrap}
+.hc .tag{height:100%;display:flex;align-items:center;padding:0 22px 0 10px;background:#de9b35;color:#0d1118;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.hc.gold .tag{background:#e4ae39}
+.hc .age{margin-left:auto;padding-right:20px;color:#8fa0b6;letter-spacing:1px}
+.hc img{display:block;width:206px;height:140px;object-fit:contain;margin:34px auto 0;filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+.hc .info{position:absolute;left:14px;right:14px;bottom:17px}
+.hc .rarity{font-size:10.5px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--r)}
+.hc .wpn{font-size:11.5px;letter-spacing:1.5px;color:#9fb0c6;text-transform:uppercase;margin-top:3px}
+.hc .skin{font-size:20px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hc .row{display:flex;gap:5px;margin-top:6px;min-height:17px;white-space:nowrap;font-size:10.5px;letter-spacing:1px;text-transform:uppercase}
+.hc .chip{padding:0 6px;line-height:15px;border:1px solid rgba(255,255,255,.22);color:#c9d2de}
+.hc .chip.st{border-color:#cf6a32;color:#ff9b5e}
+.hc .chip.sv{border-color:#c9a400;color:#ffd54a}
+.hc .warn{display:flex;gap:5px;align-items:flex-start;margin-top:5px;min-height:13px;font-size:10px;letter-spacing:.3px;text-transform:uppercase;color:#f3b350;line-height:1.25}
+.hc .warn.late{color:#8fb8ff}
+.hc .warn svg{margin-top:1px}
+.hc .pr{display:flex;align-items:baseline;justify-content:space-between;margin-top:6px}
+.hc .pr b{font-size:26px;font-weight:700;color:#f3b350;letter-spacing:.4px;font-variant-numeric:tabular-nums}
+.hc .pr b.pending{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:#8fa0b6;display:flex;align-items:center;gap:8px}
+.hc .pr b.pending i{display:block;width:54px;height:10px;background:linear-gradient(90deg,rgba(93,121,174,.15),rgba(93,121,174,.5),rgba(93,121,174,.15))}
+.hc .src{font-size:10px;letter-spacing:1.4px;color:#7f8ea3;text-transform:uppercase}
+.hc .cd{position:absolute;left:0;right:0;bottom:4px;height:3px;background:rgba(255,255,255,.06)}
+.hc .cd i{display:block;height:100%;background:#7fa0e0}
+.hc .rb{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--r)}
+.tv2{position:relative;width:300px;padding:1px;font-family:Bahnschrift,'Segoe UI',sans-serif;color:#eef2f7;background:linear-gradient(120deg,rgba(222,155,53,.95),rgba(222,155,53,.25) 45%,rgba(93,121,174,.6));clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.tv2 .in{clip-path:polygon(0 0,calc(100% - 15px) 0,100% 15px,100% 100%,15px 100%,0 calc(100% - 15px));background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 3px),linear-gradient(180deg,rgba(12,19,30,.97),rgba(8,13,21,.97))}
+.tv2 .top{height:24px;display:flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid rgba(222,155,53,.25)}
+.tv2 .tag{height:100%;display:flex;align-items:center;padding:0 22px 0 10px;background:#de9b35;color:#0d1118;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.tv2 .age{margin-left:auto;padding-right:20px;color:#8fa0b6;letter-spacing:1px}
+.tv2 .bd{padding:12px 16px 14px}
+.tv2 .big{font-size:38px;font-weight:700;color:#f3b350;letter-spacing:.5px;line-height:1;font-variant-numeric:tabular-nums}
+.tv2 .delta{font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:#8fd19a;margin-top:6px}
+.tv2 .bar{display:flex;height:8px;margin-top:12px;gap:2px}
+.tv2 .leg{margin-top:8px;display:flex;flex-direction:column}
+.tv2 .leg div{display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid rgba(93,121,174,.16);font-size:12.5px;letter-spacing:.8px;text-transform:uppercase}
+.tv2 .leg i{width:8px;height:8px}
+.tv2 .leg span{flex:1;color:#c9d2de}
+.tv2 .leg b{font-weight:600;font-variant-numeric:tabular-nums}
+.tv2 .foot{margin-top:8px;font-size:10.5px;letter-spacing:1.4px;color:#7f8ea3;text-transform:uppercase}
+.q2{align-self:flex-end;font:600 11px Bahnschrift,'Segoe UI';letter-spacing:1.5px;text-transform:uppercase;color:#0d1118;padding:3px 12px;background:#de9b35;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}</style></head><body><div class="caption"><b>C2 · HUD rarity cards, top-right</b><span>Same card layout with the HUD look of your chosen main window: Bahnschrift, cut corners, orange price, blue countdown bar.</span></div><div class="scene"><div class="sky"></div><div class="far f1"></div><div class="far f2"></div>
+<div class="wall w3"><i class="win" style="left:120px;top:90px"></i><i class="win" style="left:300px;top:90px"></i><i class="win" style="left:120px;top:260px"></i><i class="win" style="left:300px;top:260px"></i></div>
+<div class="wall w1"></div><div class="wall w2"></div><div class="door"></div><div class="ground"></div>
+<div class="crate" style="left:930px;top:612px"></div><div class="crate small" style="left:1040px;top:650px"></div><div class="vignette"></div>
+<div class="h-radar"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b></b></div><div class="h-money">$ 4 750</div>
+<div class="h-score"><span class="ct">7</span><span class="clock">1:32</span><span class="tt">5</span></div>
+<div class="h-kill"><div class="kf me"><span class="ctn">you</span><span class="gun">AK-47</span><span class="tn">Kova</span></div><div class="kf"><span class="tn">Mira</span><span class="gun">AWP</span><span class="ctn">Dex</span></div></div>
+<div class="h-health"><svg viewBox="0 0 20 20"><path d="M7 1h6v6h6v6h-6v6H7v-6H1V7h6z" fill="#f3f3f3"/></svg>100<svg viewBox="0 0 20 20" style="margin-left:14px"><path d="M10 1l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V4z" fill="#f3f3f3"/></svg>87</div>
+<div class="h-ammo">30 <small>/ 90</small></div><div class="xhair"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
+<div class="corner"><div class="hc gold" style="--r:#e4ae39"><div class="in"><div class="top"><span class="tag">★ Trade-up</span><span class="age">just now</span></div><img src="assets/karambit.png"><div class="info"><div class="rarity">★ Covert Knife</div><div class="wpn">★ Karambit</div><div class="skin">Doppler</div><div class="row"><span class="chip">FN 0.0112</span></div><div class="warn"><svg viewBox="0 0 16 16" width="11" height="11" style="flex:none"><circle cx="8" cy="8" r="6.8" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="7.2" y="7" width="1.6" height="5" fill="currentColor"/><rect x="7.2" y="3.8" width="1.6" height="1.7" fill="currentColor"/></svg>Phase not priced · may be worth more</div><div class="pr"><b>€1,376.00</b><span class="src">Src · Steam</span></div></div><div class="cd"><i style="width:92%"></i></div><div class="rb"></div></div></div><span class="q2">+2 queued</span></div>
+<div class="anno2" style="right:16px;top:408px;width:300px">Total value · on hotkey, same corner</div><div class="corner2"><div class="tv2"><div class="in"><div class="top"><span class="tag">Inventory value</span><span class="age">198/214 priced</span></div><div class="bd"><div class="big">€2,184.37</div><div class="delta">▲ €1,410.69 · 3 new items today</div><div class="bar"><i style="flex:1813.76;background:#e4ae39"></i><i style="flex:98.4;background:#eb4b4b"></i><i style="flex:61.2;background:#d32ce6"></i><i style="flex:72.35;background:#8847ff"></i><i style="flex:48.11;background:#4b69ff"></i><i style="flex:90.55;background:#b0c3d9"></i></div><div class="leg"><div><i style="background:#e4ae39"></i><span>Knives &amp; gloves</span><b>€1,813.76</b></div><div><i style="background:#eb4b4b"></i><span>Covert</span><b>€98.40</b></div><div><i style="background:#d32ce6"></i><span>Classified</span><b>€61.20</b></div><div><i style="background:#8847ff"></i><span>Restricted</span><b>€72.35</b></div><div><i style="background:#4b69ff"></i><span>Mil-Spec</span><b>€48.11</b></div><div><i style="background:#b0c3d9"></i><span>Lower grades &amp; other</span><b>€90.55</b></div></div><div class="foot">Src · Skinport 3 min · Ctrl+Shift+V</div></div></div></div></div>
+<div class="anno2" style="right:268px;top:24px;width:260px">Kill feed sits under the card during a match →</div></div></body></html>

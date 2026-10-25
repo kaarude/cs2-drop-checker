@@ -1,0 +1,70 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1600px;height:960px;overflow:hidden;background:#0d0e10}
+.caption{height:60px;display:flex;align-items:baseline;gap:16px;padding:19px 26px 0;color:#eceff3;font-family:'Segoe UI',sans-serif;background:#121317;border-bottom:1px solid #24262b}
+.caption b{font-size:19px;font-weight:600;letter-spacing:.2px}
+.caption span{font-size:13px;color:#8d939b}
+.scene{position:relative;width:1600px;height:900px;overflow:hidden}
+.sky{position:absolute;left:0;right:0;top:0;height:470px;background:linear-gradient(180deg,#5f8fb8 0%,#9dbdd2 50%,#e3d3b0 100%)}
+.far{position:absolute;background:linear-gradient(180deg,#d9c7a2,#c7ad80)}
+.f1{left:700px;top:330px;width:250px;height:380px}
+.f2{left:940px;top:390px;width:150px;height:320px;background:linear-gradient(180deg,#cdb68a,#b89a6c)}
+.wall{position:absolute}
+.w1{left:-60px;top:150px;width:560px;height:560px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.13) 0 2px,transparent 2px 44px),repeating-linear-gradient(90deg,rgba(80,52,20,.10) 0 2px,transparent 2px 88px),linear-gradient(90deg,#c9a26b,#d8b67f 60%,#b78f5a)}
+.w2{left:498px;top:260px;width:230px;height:450px;background:repeating-linear-gradient(0deg,rgba(40,25,10,.15) 0 2px,transparent 2px 44px),linear-gradient(90deg,#9c7646,#8a6639)}
+.door{position:absolute;left:560px;top:430px;width:118px;height:280px;border-radius:59px 59px 0 0;background:linear-gradient(180deg,#24180c,#0f0905)}
+.w3{right:-40px;top:110px;width:620px;height:600px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.12) 0 2px,transparent 2px 50px),linear-gradient(270deg,#b8915c,#d1ad77 45%,#c39c66)}
+.win{position:absolute;width:70px;height:96px;background:linear-gradient(#3a2a18,#1c130a);border:6px solid #a7834f}
+.ground{position:absolute;left:0;right:0;top:700px;bottom:0;background:repeating-linear-gradient(100deg,rgba(60,40,15,.08) 0 3px,transparent 3px 22px),linear-gradient(180deg,#b28a57,#94703f 45%,#6d5230)}
+.crate{position:absolute;width:118px;height:104px;background:linear-gradient(45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),#8a6a3d;border:8px solid #5e4322}
+.crate.small{width:80px;height:66px;border-width:6px}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 75% 70% at 50% 50%,transparent 55%,rgba(0,0,0,.38))}
+.h-radar{position:absolute;left:16px;top:16px;width:210px;height:210px;background:rgba(14,16,18,.55);border:1px solid rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.h-radar i{position:absolute;background:rgba(190,170,130,.35)}
+.r1{left:30px;top:20px;width:40px;height:150px}.r2{left:30px;top:130px;width:150px;height:40px}.r3{left:120px;top:40px;width:40px;height:100px}
+.h-radar b{position:absolute;left:100px;top:142px;width:9px;height:9px;border-radius:50%;background:#5ec8ff;box-shadow:0 0 6px #5ec8ff}
+.h-money{position:absolute;left:20px;top:236px;font:600 22px Bahnschrift,'Segoe UI';color:#b9e08f;text-shadow:0 1px 2px #000}
+.h-score{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:4px;font:600 20px Bahnschrift,'Segoe UI';color:#fff}
+.h-score span{padding:4px 14px;background:rgba(12,14,16,.6)}
+.h-score .ct{color:#9fc0ff;border-bottom:3px solid #5d79ae}.h-score .tt{color:#f2c27a;border-bottom:3px solid #de9b35}
+.h-kill{position:absolute;right:16px;top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;font:600 13px 'Segoe UI'}
+.kf{display:flex;gap:10px;padding:5px 10px;background:rgba(10,10,10,.55);color:#fff}
+.kf.me{border:1px solid #d33}
+.kf .gun{color:#ddd;font-weight:400}
+.ctn{color:#9fc0ff}.tn{color:#f2c27a}
+.h-health{position:absolute;left:24px;bottom:20px;display:flex;align-items:center;gap:10px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-health svg{width:22px;height:22px}
+.h-ammo{position:absolute;right:28px;bottom:20px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-ammo small{font-size:18px;color:#cfcfcf}
+.xhair{position:absolute;left:800px;top:450px}
+.xhair i{position:absolute;background:#5cff6a;box-shadow:0 0 1px #000}
+.xhair .a{left:-1px;top:-14px;width:2px;height:9px}.xhair .b{left:-1px;top:5px;width:2px;height:9px}.xhair .c{left:-14px;top:-1px;width:9px;height:2px}.xhair .d{left:5px;top:-1px;width:9px;height:2px}
+.anno{position:absolute;font:600 10.5px 'Segoe UI';letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.8);text-shadow:0 1px 2px rgba(0,0,0,.9)}
+.stackD{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;width:680px;display:flex;flex-direction:column;gap:5px;font-family:'Segoe UI',sans-serif}
+.tk{display:flex;align-items:center;gap:10px;height:40px;padding:0 12px 0 0;background:rgba(8,9,11,.76);border-left:3px solid var(--r);border-radius:3px;color:#eef0f3;font-size:13.5px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.tk.gold{background:linear-gradient(90deg,rgba(228,174,57,.28),rgba(8,9,11,.78) 45%)}
+.tk .ev{width:78px;flex:none;text-align:center;font:600 10px 'Cascadia Mono',Consolas,monospace;letter-spacing:1px;color:#9aa3ad}
+.tk img{width:50px;height:38px;object-fit:contain;flex:none}
+.tk .nm{font-weight:600;white-space:nowrap}
+.tk .wr{font:600 10.5px 'Cascadia Mono',Consolas,monospace;color:#aeb6c0;padding:1px 5px;border:1px solid rgba(255,255,255,.18);border-radius:3px}
+.tk .fl{font:600 10.5px 'Cascadia Mono',Consolas,monospace;color:#8f98a3}
+.tk .st{font:700 10.5px 'Cascadia Mono',Consolas,monospace;color:#f0904f;padding:1px 5px;border:1px solid rgba(240,144,79,.5);border-radius:3px}
+.tk .warn{font-size:11.5px;color:#e6c46e;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.tk .sp{flex:1}
+.tk .pr{font:600 15px 'Cascadia Mono',Consolas,monospace}
+.tk .src{font:600 10px 'Cascadia Mono',Consolas,monospace;color:#7f8892;width:30px}
+.tk .age{font:10.5px 'Cascadia Mono',Consolas,monospace;color:#6f7882;width:26px;text-align:right}
+.tk.fading{opacity:.6}
+.tk.gold .ev{color:#f5cf6a}
+.tk.total{--r:#f0904f;background:rgba(8,9,11,.84);height:36px}
+.tk.total .pr{font-size:16px;color:#ffb36b}
+.tk.total .up{font:600 11.5px 'Cascadia Mono',Consolas,monospace;color:#6fd39a}
+.tk.total .mut{font:10.5px 'Cascadia Mono',Consolas,monospace;color:#7f8892}
+.sepD{height:6px}</style></head><body><div class="caption"><b>D · Compact ticker</b><span>One line per item at bottom-center. Smallest footprint; total value appears as its own line on hotkey.</span></div><div class="scene"><div class="sky"></div><div class="far f1"></div><div class="far f2"></div>
+<div class="wall w3"><i class="win" style="left:120px;top:90px"></i><i class="win" style="left:300px;top:90px"></i><i class="win" style="left:120px;top:260px"></i><i class="win" style="left:300px;top:260px"></i></div>
+<div class="wall w1"></div><div class="wall w2"></div><div class="door"></div><div class="ground"></div>
+<div class="crate" style="left:930px;top:612px"></div><div class="crate small" style="left:1040px;top:650px"></div><div class="vignette"></div>
+<div class="h-radar"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b></b></div><div class="h-money">$ 4 750</div>
+<div class="h-score"><span class="ct">7</span><span class="clock">1:32</span><span class="tt">5</span></div>
+<div class="h-kill"><div class="kf me"><span class="ctn">you</span><span class="gun">AK-47</span><span class="tn">Kova</span></div><div class="kf"><span class="tn">Mira</span><span class="gun">AWP</span><span class="ctn">Dex</span></div></div>
+<div class="h-health"><svg viewBox="0 0 20 20"><path d="M7 1h6v6h6v6h-6v6H7v-6H1V7h6z" fill="#f3f3f3"/></svg>100<svg viewBox="0 0 20 20" style="margin-left:14px"><path d="M10 1l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V4z" fill="#f3f3f3"/></svg>87</div>
+<div class="h-ammo">30 <small>/ 90</small></div><div class="xhair"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div><div class="anno" style="left:460px;bottom:300px">Ticker · newest on top · fade after 10 s · total value line on hotkey</div><div class="stackD"><div class="tk total"><span class="ev">INVENTORY</span><span class="pr">€2,184.37</span><span class="up">▲ €1,410.69 today</span><span class="sp"></span><span class="mut">198/214 priced · SKP 3m · Ctrl+Shift+V</span></div><div class="sepD"></div><div class="tk gold" style="--r:#e4ae39"><span class="ev">TRADE-UP</span><img src="assets/karambit.png"><span class="nm">★ Karambit | Doppler</span><span class="wr">FN</span><span class="fl">0.0112</span><span class="warn"><svg viewBox="0 0 16 16" width="12" height="12" style="flex:none"><circle cx="8" cy="8" r="6.8" fill="none" stroke="#e6c46e" stroke-width="1.5"/><rect x="7.25" y="7" width="1.5" height="5" fill="#e6c46e"/><rect x="7.25" y="3.8" width="1.5" height="1.7" fill="#e6c46e"/></svg>phase not priced</span><span class="sp"></span><span class="pr">€1,376.00</span><span class="src">STM</span><span class="age">0s</span></div><div class="tk" style="--r:#eb4b4b"><span class="ev">CASE</span><img src="assets/m4.png"><span class="nm">M4A4 | Temukau</span><span class="wr">FT</span><span class="fl">0.1693</span><span class="st">ST</span><span class="warn"><svg viewBox="0 0 16 16" width="12" height="12" style="flex:none"><circle cx="8" cy="8" r="6.8" fill="none" stroke="#e6c46e" stroke-width="1.5"/><rect x="7.25" y="7" width="1.5" height="5" fill="#e6c46e"/><rect x="7.25" y="3.8" width="1.5" height="1.7" fill="#e6c46e"/></svg>+2 stickers</span><span class="sp"></span><span class="pr">€34.66</span><span class="src">SKP</span><span class="age">3s</span></div><div class="tk fading" style="--r:#b0c3d9"><span class="ev">DROP</span><img src="assets/p250.png"><span class="nm">P250 | Sand Dune</span><span class="wr">FT</span><span class="fl">0.2871</span><span class="sp"></span><span class="pr">€0.03</span><span class="src">SKP</span><span class="age">7s</span></div></div></div></body></html>

@@ -1,0 +1,78 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1600px;height:960px;overflow:hidden;background:#0d0e10}
+.caption{height:60px;display:flex;align-items:baseline;gap:16px;padding:19px 26px 0;color:#eceff3;font-family:'Segoe UI',sans-serif;background:#121317;border-bottom:1px solid #24262b}
+.caption b{font-size:19px;font-weight:600;letter-spacing:.2px}
+.caption span{font-size:13px;color:#8d939b}
+.scene{position:relative;width:1600px;height:900px;overflow:hidden}
+.sky{position:absolute;left:0;right:0;top:0;height:470px;background:linear-gradient(180deg,#5f8fb8 0%,#9dbdd2 50%,#e3d3b0 100%)}
+.far{position:absolute;background:linear-gradient(180deg,#d9c7a2,#c7ad80)}
+.f1{left:700px;top:330px;width:250px;height:380px}
+.f2{left:940px;top:390px;width:150px;height:320px;background:linear-gradient(180deg,#cdb68a,#b89a6c)}
+.wall{position:absolute}
+.w1{left:-60px;top:150px;width:560px;height:560px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.13) 0 2px,transparent 2px 44px),repeating-linear-gradient(90deg,rgba(80,52,20,.10) 0 2px,transparent 2px 88px),linear-gradient(90deg,#c9a26b,#d8b67f 60%,#b78f5a)}
+.w2{left:498px;top:260px;width:230px;height:450px;background:repeating-linear-gradient(0deg,rgba(40,25,10,.15) 0 2px,transparent 2px 44px),linear-gradient(90deg,#9c7646,#8a6639)}
+.door{position:absolute;left:560px;top:430px;width:118px;height:280px;border-radius:59px 59px 0 0;background:linear-gradient(180deg,#24180c,#0f0905)}
+.w3{right:-40px;top:110px;width:620px;height:600px;background:repeating-linear-gradient(0deg,rgba(80,52,20,.12) 0 2px,transparent 2px 50px),linear-gradient(270deg,#b8915c,#d1ad77 45%,#c39c66)}
+.win{position:absolute;width:70px;height:96px;background:linear-gradient(#3a2a18,#1c130a);border:6px solid #a7834f}
+.ground{position:absolute;left:0;right:0;top:700px;bottom:0;background:repeating-linear-gradient(100deg,rgba(60,40,15,.08) 0 3px,transparent 3px 22px),linear-gradient(180deg,#b28a57,#94703f 45%,#6d5230)}
+.crate{position:absolute;width:118px;height:104px;background:linear-gradient(45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,#5e4322 46% 54%,transparent 54%),#8a6a3d;border:8px solid #5e4322}
+.crate.small{width:80px;height:66px;border-width:6px}
+.vignette{position:absolute;inset:0;background:radial-gradient(ellipse 75% 70% at 50% 50%,transparent 55%,rgba(0,0,0,.38))}
+.h-radar{position:absolute;left:16px;top:16px;width:210px;height:210px;background:rgba(14,16,18,.55);border:1px solid rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.h-radar i{position:absolute;background:rgba(190,170,130,.35)}
+.r1{left:30px;top:20px;width:40px;height:150px}.r2{left:30px;top:130px;width:150px;height:40px}.r3{left:120px;top:40px;width:40px;height:100px}
+.h-radar b{position:absolute;left:100px;top:142px;width:9px;height:9px;border-radius:50%;background:#5ec8ff;box-shadow:0 0 6px #5ec8ff}
+.h-money{position:absolute;left:20px;top:236px;font:600 22px Bahnschrift,'Segoe UI';color:#b9e08f;text-shadow:0 1px 2px #000}
+.h-score{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:4px;font:600 20px Bahnschrift,'Segoe UI';color:#fff}
+.h-score span{padding:4px 14px;background:rgba(12,14,16,.6)}
+.h-score .ct{color:#9fc0ff;border-bottom:3px solid #5d79ae}.h-score .tt{color:#f2c27a;border-bottom:3px solid #de9b35}
+.h-kill{position:absolute;right:16px;top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;font:600 13px 'Segoe UI'}
+.kf{display:flex;gap:10px;padding:5px 10px;background:rgba(10,10,10,.55);color:#fff}
+.kf.me{border:1px solid #d33}
+.kf .gun{color:#ddd;font-weight:400}
+.ctn{color:#9fc0ff}.tn{color:#f2c27a}
+.h-health{position:absolute;left:24px;bottom:20px;display:flex;align-items:center;gap:10px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-health svg{width:22px;height:22px}
+.h-ammo{position:absolute;right:28px;bottom:20px;font:600 30px Bahnschrift,'Segoe UI';color:#f3f3f3;text-shadow:0 1px 3px #000}
+.h-ammo small{font-size:18px;color:#cfcfcf}
+.xhair{position:absolute;left:800px;top:450px}
+.xhair i{position:absolute;background:#5cff6a;box-shadow:0 0 1px #000}
+.xhair .a{left:-1px;top:-14px;width:2px;height:9px}.xhair .b{left:-1px;top:5px;width:2px;height:9px}.xhair .c{left:-14px;top:-1px;width:9px;height:2px}.xhair .d{left:5px;top:-1px;width:9px;height:2px}
+.anno{position:absolute;font:600 10.5px 'Segoe UI';letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.8);text-shadow:0 1px 2px rgba(0,0,0,.9)}
+.rowC{position:absolute;right:24px;top:172px;display:flex;gap:14px;font-family:'Segoe UI',sans-serif;align-items:flex-start}
+.cc{position:relative;width:228px;height:346px;border-radius:10px;overflow:hidden;color:#f2f4f7;background:radial-gradient(120% 70% at 50% 0%,color-mix(in srgb,var(--r) 55%,transparent),transparent 70%),linear-gradient(180deg,#1b1e24,#121418);box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08);opacity:.96}
+.cc.gold{box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 0 0 1px rgba(245,207,106,.75),0 0 26px rgba(228,174,57,.45)}
+.cc.gold::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,236,170,.10) 45%,transparent 60%);pointer-events:none}
+.cc .top{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;font-size:10.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.cc .ring{width:16px;height:16px}
+.cc img{display:block;width:206px;height:150px;object-fit:contain;margin:32px auto 0;filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
+.cc .info{position:absolute;left:14px;right:14px;bottom:16px}
+.cc .rarity{font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--r)}
+.cc .nm{font-size:15px;font-weight:600;line-height:1.2;margin-top:2px}
+.cc .wr{font-size:12px;color:#aab2bd;margin-top:1px}
+.cc .flags{display:flex;gap:5px;margin-top:6px;min-height:17px}
+.cc .note{font-size:11px;color:#e6c46e;margin-top:4px;line-height:1.3}
+.cc .pr{display:flex;align-items:baseline;justify-content:space-between;margin-top:8px}
+.cc .pr b{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.cc .src{font-size:10.5px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.09);color:#c4cbd4}
+.cc .rb{position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--r)}
+.cc.fading{opacity:.62}
+.tvC{position:absolute;left:24px;top:304px;width:330px;padding:16px 18px 14px;border-radius:12px;color:#f2f4f7;font-family:'Segoe UI',sans-serif;background:linear-gradient(180deg,#1b1e24f0,#121418f0);box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08)}
+.tvC .k{font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#aab2bd}
+.tvC .big{font-size:34px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.tvC .delta{font-size:12.5px;color:#6fd39a}
+.tvC .bar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:12px;gap:2px}
+.tvC .leg{margin-top:10px;display:flex;flex-direction:column;gap:5px;font-size:12.5px}
+.tvC .leg div{display:flex;align-items:center;gap:8px}
+.tvC .leg i{width:9px;height:9px;border-radius:2px}
+.tvC .leg span{flex:1;color:#c4cbd4}
+.tvC .leg b{font-weight:600;font-variant-numeric:tabular-nums}
+.tvC .foot{margin-top:10px;font-size:11px;color:#7f8892}</style></head><body><div class="caption"><b>C · Rarity cards</b><span>Case-reveal style cards tinted by rarity. Shown side by side for comparison; in use they appear one at a time and queue.</span></div><div class="scene"><div class="sky"></div><div class="far f1"></div><div class="far f2"></div>
+<div class="wall w3"><i class="win" style="left:120px;top:90px"></i><i class="win" style="left:300px;top:90px"></i><i class="win" style="left:120px;top:260px"></i><i class="win" style="left:300px;top:260px"></i></div>
+<div class="wall w1"></div><div class="wall w2"></div><div class="door"></div><div class="ground"></div>
+<div class="crate" style="left:930px;top:612px"></div><div class="crate small" style="left:1040px;top:650px"></div><div class="vignette"></div>
+<div class="h-radar"><i class="r1"></i><i class="r2"></i><i class="r3"></i><b></b></div><div class="h-money">$ 4 750</div>
+<div class="h-score"><span class="ct">7</span><span class="clock">1:32</span><span class="tt">5</span></div>
+<div class="h-kill"><div class="kf me"><span class="ctn">you</span><span class="gun">AK-47</span><span class="tn">Kova</span></div><div class="kf"><span class="tn">Mira</span><span class="gun">AWP</span><span class="ctn">Dex</span></div></div>
+<div class="h-health"><svg viewBox="0 0 20 20"><path d="M7 1h6v6h6v6h-6v6H7v-6H1V7h6z" fill="#f3f3f3"/></svg>100<svg viewBox="0 0 20 20" style="margin-left:14px"><path d="M10 1l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V4z" fill="#f3f3f3"/></svg>87</div>
+<div class="h-ammo">30 <small>/ 90</small></div><div class="xhair"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div><div class="anno" style="right:24px;top:150px;text-align:right">Drop cards · one at a time · fade after 10 s</div><div class="rowC"><div class="cc gold" style="--r:#e4ae39"><div class="top"><span>Trade-up contract</span><svg class="ring" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2"/><circle cx="8" cy="8" r="6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="36.2 37.7" transform="rotate(-90 8 8)"/></svg></div><img src="assets/karambit.png"><div class="info"><div class="rarity">Covert Knife</div><div class="nm">★ Karambit | Doppler</div><div class="wr">Factory New · float 0.0112</div><div class="flags"></div><div class="note">Doppler phase not priced · may be worth more</div><div class="pr"><b>€1,376.00</b><span class="src">Steam Market</span></div></div><div class="rb"></div></div><div class="cc" style="--r:#eb4b4b"><div class="top"><span>Case opened</span><svg class="ring" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2"/><circle cx="8" cy="8" r="6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="24.9 37.7" transform="rotate(-90 8 8)"/></svg></div><img src="assets/m4.png"><div class="info"><div class="rarity">Covert Rifle</div><div class="nm">M4A4 | Temukau</div><div class="wr">Field-Tested · float 0.1693</div><div class="flags"><span class="pill st">StatTrak™</span></div><div class="note">2 stickers · may be worth more</div><div class="pr"><b>€34.66</b><span class="src">Skinport</span></div></div><div class="rb"></div></div><div class="cc fading" style="--r:#b0c3d9"><div class="top"><span>Weekly drop</span><svg class="ring" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2"/><circle cx="8" cy="8" r="6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="10.6 37.7" transform="rotate(-90 8 8)"/></svg></div><img src="assets/p250.png"><div class="info"><div class="rarity">Consumer Grade Pistol</div><div class="nm">P250 | Sand Dune</div><div class="wr">Field-Tested · float 0.2871</div><div class="flags"></div><div class="pr"><b>€0.03</b><span class="src">Skinport</span></div></div><div class="rb"></div></div></div><div class="anno" style="left:24px;top:284px">Total value · Ctrl+Shift+V or tray menu</div><div class="tvC"><div class="k">Inventory value</div><div class="big">€2,184.37</div><div class="delta">▲ €1,410.69 from 3 new items today</div><div class="bar"><i style="flex:1813.76;background:#e4ae39"></i><i style="flex:98.4;background:#eb4b4b"></i><i style="flex:61.2;background:#d32ce6"></i><i style="flex:72.35;background:#8847ff"></i><i style="flex:48.11;background:#4b69ff"></i><i style="flex:90.55;background:#b0c3d9"></i></div><div class="leg"><div><i style="background:#e4ae39"></i><span>Knives &amp; gloves</span><b>€1,813.76</b></div><div><i style="background:#eb4b4b"></i><span>Covert</span><b>€98.40</b></div><div><i style="background:#d32ce6"></i><span>Classified</span><b>€61.20</b></div><div><i style="background:#8847ff"></i><span>Restricted</span><b>€72.35</b></div><div><i style="background:#4b69ff"></i><span>Mil-Spec</span><b>€48.11</b></div><div><i style="background:#b0c3d9"></i><span>Lower grades &amp; other</span><b>€90.55</b></div></div><div class="foot">198 of 214 items priced · Skinport · 3 min ago</div></div></div></body></html>

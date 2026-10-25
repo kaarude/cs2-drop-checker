@@ -1,0 +1,10 @@
+bin/
+obj/
+publish/
+artifacts/
+.vs/
+*.user
+*.suo
+TestResults/
+/cs2-drop-checker.exe
+/cs2-drop-checker*.zip

@@ -1,0 +1,198 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:Cs2DropChecker.App.Controls"
+                    xmlns:vm="clr-namespace:Cs2DropChecker.App.ViewModels">
+
+  <!-- Shortcut shown as key caps: Ctrl + Shift + O -->
+  <DataTemplate x:Key="KeyCap">
+    <StackPanel Orientation="Horizontal">
+      <TextBlock x:Name="plus" Text="+" Foreground="{StaticResource Dim}" FontSize="11" Margin="0,0,5,0" VerticalAlignment="Center" />
+      <Border Background="#c9d2de" Padding="6,1" Margin="0,0,5,0" VerticalAlignment="Center">
+        <c:TrackedText Text="{Binding}" FontSize="10.5" FontWeight="SemiBold" Spacing="0.8" Foreground="#0b1119" />
+      </Border>
+    </StackPanel>
+    <DataTemplate.Triggers>
+      <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+        <Setter TargetName="plus" Property="Visibility" Value="Collapsed" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+  <ItemsPanelTemplate x:Key="Horizontal">
+    <StackPanel Orientation="Horizontal" />
+  </ItemsPanelTemplate>
+  <ItemsPanelTemplate x:Key="Wrap">
+    <WrapPanel Orientation="Horizontal" />
+  </ItemsPanelTemplate>
+
+  <!-- Drop table -->
+  <Style x:Key="ColHead" TargetType="c:TrackedText">
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="Spacing" Value="1.4" />
+    <Setter Property="Foreground" Value="{StaticResource Label}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style x:Key="Cell" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{StaticResource Text2}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+  </Style>
+
+  <ControlTemplate x:Key="DropHeader" TargetType="ContentControl">
+    <Border BorderBrush="{StaticResource LineSoft}" BorderThickness="0,0,0,1" Height="30">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="3" />
+          <ColumnDefinition Width="92" />
+          <ColumnDefinition Width="*" MinWidth="180" />
+          <ColumnDefinition Width="122" />
+          <ColumnDefinition Width="250" />
+          <ColumnDefinition Width="84" />
+          <ColumnDefinition Width="100" />
+          <ColumnDefinition Width="110" />
+        </Grid.ColumnDefinitions>
+        <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="When" Margin="9,0,0,0" />
+        <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Item" Margin="2,0,0,0" />
+        <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="How" />
+        <c:TrackedText Grid.Column="4" Style="{StaticResource ColHead}" Text="Flags" />
+        <c:TrackedText Grid.Column="5" Style="{StaticResource ColHead}" Text="At drop" HorizontalAlignment="Right" />
+        <c:TrackedText Grid.Column="6" Style="{StaticResource ColHead}" Text="Now" HorizontalAlignment="Right" />
+        <c:TrackedText Grid.Column="7" Style="{StaticResource ColHead}" Text="Price source" Margin="16,0,0,0" />
+      </Grid>
+    </Border>
+  </ControlTemplate>
+
+  <DataTemplate x:Key="DropRow" DataType="{x:Type vm:DropRowViewModel}">
+    <Border x:Name="row" BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Height="38" Background="Transparent">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="3" />
+          <ColumnDefinition Width="92" />
+          <ColumnDefinition Width="*" MinWidth="180" />
+          <ColumnDefinition Width="122" />
+          <ColumnDefinition Width="250" />
+          <ColumnDefinition Width="84" />
+          <ColumnDefinition Width="100" />
+          <ColumnDefinition Width="110" />
+        </Grid.ColumnDefinitions>
+        <Rectangle Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" Margin="0,8" />
+        <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding When}" Margin="9,0,0,0" FontSize="11.5" />
+        <Grid Grid.Column="2" Margin="0,0,10,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Image c:Img.DecodeWidth="96" c:Img.Icon="{Binding IconUrl}" Width="42" Height="30" Margin="0,0,10,0" Stretch="Uniform" />
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <c:TrackedText Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Spacing="0.8" Foreground="{StaticResource Text}" />
+            <TextBlock Text="{Binding Wear}" FontSize="10.5" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" Margin="0,1,0,0" />
+          </StackPanel>
+        </Grid>
+        <TextBlock Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding How}" />
+        <ItemsControl Grid.Column="4" ItemsSource="{Binding Flags}" ItemTemplate="{StaticResource PillTemplate}"
+                      ItemsPanel="{StaticResource Horizontal}" VerticalAlignment="Center" ClipToBounds="True" Focusable="False" />
+        <TextBlock Grid.Column="5" Style="{StaticResource Cell}" Text="{Binding AtDrop}" HorizontalAlignment="Right" Foreground="{StaticResource Text}" FontWeight="SemiBold" />
+        <StackPanel Grid.Column="6" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <Path x:Name="trend" Width="7" Height="6" Margin="0,0,5,0" VerticalAlignment="Center" Visibility="Collapsed" />
+          <TextBlock x:Name="now" Style="{StaticResource Cell}" Text="{Binding Now}" Foreground="{StaticResource Text}" FontWeight="SemiBold" />
+        </StackPanel>
+        <TextBlock Grid.Column="7" Style="{StaticResource Cell}" Text="{Binding Source}" Margin="16,0,0,0" FontSize="11.5" />
+      </Grid>
+    </Border>
+    <DataTemplate.Triggers>
+      <Trigger SourceName="row" Property="IsMouseOver" Value="True">
+        <Setter TargetName="row" Property="Background" Value="#0affffff" />
+      </Trigger>
+      <DataTrigger Binding="{Binding Trend}" Value="up">
+        <Setter TargetName="trend" Property="Visibility" Value="Visible" />
+        <Setter TargetName="trend" Property="Data" Value="M0,6 L3.5,0 L7,6 Z" />
+        <Setter TargetName="trend" Property="Fill" Value="{StaticResource Up}" />
+        <Setter TargetName="now" Property="Foreground" Value="{StaticResource Up}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Trend}" Value="down">
+        <Setter TargetName="trend" Property="Visibility" Value="Visible" />
+        <Setter TargetName="trend" Property="Data" Value="M0,0 L7,0 L3.5,6 Z" />
+        <Setter TargetName="trend" Property="Fill" Value="{StaticResource Down}" />
+        <Setter TargetName="now" Property="Foreground" Value="{StaticResource Down}" />
+      </DataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+
+  <!-- Inventory tile -->
+  <DataTemplate x:Key="Tile" DataType="{x:Type vm:TileViewModel}">
+    <c:CutBorder x:Name="tile" Width="120" Height="174" Margin="0,0,8,8" Cut="10" Corners="TopRight" BorderThickness="1"
+                 BorderBrush="{Binding RarityHex, Converter={StaticResource HexBrush}}" Background="{StaticResource CardBg}">
+      <c:CutBorder.ToolTip>
+        <StackPanel>
+          <TextBlock Text="{Binding Item.Name}" FontWeight="SemiBold" Foreground="{StaticResource Text}" />
+          <TextBlock Text="{Binding Wear}" Foreground="{StaticResource Muted}" FontSize="11.5" />
+          <TextBlock Foreground="{StaticResource Gold}" FontSize="11.5">
+            <Run Text="{Binding PriceText, Mode=OneWay}" /><Run Text=" · " Foreground="{StaticResource Dim}" /><Run Text="{Binding SourceText, Mode=OneWay}" Foreground="{StaticResource Dim}" />
+          </TextBlock>
+        </StackPanel>
+      </c:CutBorder.ToolTip>
+      <Grid>
+        <Rectangle Fill="{Binding RarityHex, Converter={StaticResource HexTint}, ConverterParameter=5a}" />
+        <Image c:Img.DecodeWidth="200" c:Img.Icon="{Binding IconUrl}" Width="104" Height="68" Margin="0,16,0,0"
+               VerticalAlignment="Top" HorizontalAlignment="Center" Stretch="Uniform" />
+        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,9,0" Padding="4,0" BorderThickness="1"
+                BorderBrush="#99e6c46e" Background="#cc0b1119" Visibility="{Binding Badge, Converter={StaticResource Vis}}">
+          <c:TrackedText Text="{Binding Badge}" FontSize="8.5" FontWeight="SemiBold" Spacing="0.6" Foreground="{StaticResource Warn}" Upper="False" />
+        </Border>
+        <StackPanel VerticalAlignment="Bottom" Margin="8,0,8,9">
+          <c:TrackedText Text="{Binding RarityText}" FontSize="8.5" FontWeight="Bold" Spacing="1" Foreground="{Binding RarityHex, Converter={StaticResource HexBrush}}" />
+          <c:TrackedText Text="{Binding Weapon}" FontSize="8.5" Spacing="0.8" Foreground="#9fb0c6" Margin="0,1,0,0" />
+          <c:TrackedText Text="{Binding Skin}" FontSize="12" FontWeight="Bold" Spacing="0.4" Foreground="#f2f5f8" />
+          <c:TrackedText Text="{Binding Wear}" FontSize="8.5" Spacing="0.6" Foreground="{StaticResource Dim}" Margin="0,1,0,0" />
+          <Grid Margin="0,3,0,0">
+            <TextBlock Text="{Binding PriceText}" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource Gold}" />
+            <c:TrackedText Text="{Binding SourceText}" FontSize="7.5" Spacing="0.8" Foreground="{StaticResource Label}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+          </Grid>
+        </StackPanel>
+        <Rectangle Height="3" VerticalAlignment="Bottom" Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" />
+      </Grid>
+    </c:CutBorder>
+    <DataTemplate.Triggers>
+      <Trigger SourceName="tile" Property="IsMouseOver" Value="True">
+        <Setter TargetName="tile" Property="BorderThickness" Value="2" />
+      </Trigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+
+  <DataTemplate x:Key="TileRow" DataType="{x:Type vm:TileRow}">
+    <ItemsControl ItemsSource="{Binding Tiles}" ItemTemplate="{StaticResource Tile}" ItemsPanel="{StaticResource Horizontal}" Focusable="False" />
+  </DataTemplate>
+
+  <!-- Status dot: ok / warn / idle / busy -->
+  <Style x:Key="Dot" TargetType="Ellipse">
+    <Setter Property="Width" Value="6" />
+    <Setter Property="Height" Value="6" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Fill" Value="{StaticResource Blue}" />
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="ok">
+        <Setter Property="Fill" Value="{StaticResource Up}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="warn">
+        <Setter Property="Fill" Value="{StaticResource Accent}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="">
+        <Setter Property="Fill" Value="{StaticResource Dim}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="StatusText" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+    <Setter Property="Foreground" Value="{StaticResource Muted}" />
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="ok">
+        <Setter Property="Foreground" Value="{StaticResource Up}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="warn">
+        <Setter Property="Foreground" Value="{StaticResource Warn}" />
+      </DataTrigger>
+    </Style.Triggers>
+  </Style>
+</ResourceDictionary>

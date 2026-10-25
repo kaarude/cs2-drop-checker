@@ -1,0 +1,161 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:960px;overflow:hidden;background:#0d0e10}
+.caption{height:60px;display:flex;align-items:baseline;gap:16px;padding:19px 26px 0;color:#eceff3;font-family:'Segoe UI',sans-serif;background:#121317;border-bottom:1px solid #24262b}
+.caption b{font-size:19px;font-weight:600}
+.caption span{font-size:13px;color:#8d939b}
+.win{width:1440px;height:900px;display:flex;flex-direction:column;background:#1b1d21;color:#e8ebef;font-family:'Segoe UI',sans-serif}
+.titlebar{height:40px;flex:none;display:flex;align-items:center;gap:10px;padding-left:14px;background:#16181b;font-size:12.5px;color:#d5d9de}
+.logo{width:16px;height:16px;border-radius:4px;background:linear-gradient(135deg,#f0904f,#e4ae39)}
+.status{margin-left:14px;display:flex;align-items:center;gap:7px;color:#a6dcb8;font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(85,212,131,.10)}
+.status i{width:7px;height:7px;border-radius:50%;background:#55d483}
+.wbtns{margin-left:auto;display:flex;height:100%}.wbtns span{width:46px;display:grid;place-items:center;color:#c8ccd2;font-size:12px}
+.body{flex:1;display:flex;min-height:0}
+nav{width:212px;flex:none;padding:12px 8px;display:flex;flex-direction:column;gap:2px;background:#16181b}
+nav a{display:flex;align-items:center;gap:12px;height:38px;padding:0 12px;border-radius:6px;color:#c9ced5;font-size:13.5px;position:relative}
+nav a svg{width:16px;height:16px;flex:none}
+nav a em{margin-left:auto;font-style:normal;font-size:11px;padding:0 7px;border-radius:999px;background:#f0904f;color:#1b1d21;font-weight:600}
+nav a.on{background:rgba(255,255,255,.06);color:#fff}
+nav a.on::before{content:'';position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:2px;background:#f0904f}
+nav .bottom{margin-top:auto;padding:12px;font-size:11.5px;color:#868d96;line-height:1.7}
+main{flex:1;min-width:0;padding:18px 24px;display:flex;flex-direction:column;gap:14px}
+.head{display:flex;align-items:center;justify-content:space-between;height:34px}
+h1{font-size:22px;font-weight:600}
+.btn{display:flex;align-items:center;gap:10px;height:32px;padding:0 14px;border-radius:6px;background:#2a2e34;border:1px solid #363b42;font-size:13px}
+kbd{font:11px 'Cascadia Mono',Consolas,monospace;color:#9aa2ab;padding:1px 6px;border-radius:4px;border:1px solid #3c424a}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:#222529;border:1px solid #2c3036;border-radius:10px;padding:13px 16px;height:92px}
+.kpi .l{font-size:12px;color:#9aa2ab}
+.kpi .v{font-size:25px;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.kpi .v.sm{font-size:18px;padding:5px 0 3px}
+.kpi .s{font-size:12px;color:#9aa2ab;margin-top:1px}
+.kpi .s.up{color:#6fd39a}
+.card{background:#222529;border:1px solid #2c3036;border-radius:10px}
+.card .hd{display:flex;align-items:center;gap:14px;height:44px;padding:0 16px}
+.card .hd b{font-size:14px;font-weight:600}
+.muted{color:#8a929b;font-size:12px}
+.link{margin-left:auto;color:#f0a06a;font-size:12.5px}
+.seg{margin-left:auto;display:flex;background:#1a1c20;border:1px solid #2f343a;border-radius:6px;padding:2px}
+.seg i{font-style:normal;font-size:12px;padding:3px 10px;border-radius:4px;color:#a8afb8}
+.seg i.on{background:#33383f;color:#fff}
+.chart svg{display:block;margin:0 16px 8px}
+.grid{stroke:#2e3238;stroke-width:1}
+.ax{fill:#7f8790;font:11px 'Segoe UI'}
+.ln{stroke:#8fb8ff;stroke-width:2;fill:none}
+.s1{stop-color:#8fb8ff;stop-opacity:.28}.s2{stop-color:#8fb8ff;stop-opacity:0}
+.mk{fill:#1b1d21;stroke:#8fb8ff;stroke-width:2}
+.mk.big{stroke:#e4ae39;fill:#e4ae39}
+.tip rect{fill:#2c3036;stroke:#3a3f46}
+.tip text{font-family:'Segoe UI'}
+.tip .t1{fill:#e8ebef;font-weight:600;font-size:12px}.tip .t2{fill:#9aa2ab;font-size:11.5px}.tip .t3{fill:#e4ae39;font-weight:600;font-size:11.5px}
+.tbl .th,.tbl .tr{display:grid;grid-template-columns:92px 1fr 122px 250px 84px 100px 100px;align-items:center;gap:12px;padding:0 16px}
+.tbl .th{height:30px;font-size:11.5px;color:#8a929b;border-top:1px solid #2c3036;border-bottom:1px solid #2c3036}
+.tbl .tr{height:38px;font-size:12.5px;border-bottom:1px solid #282c31;position:relative}
+.tbl .tr:last-child{border-bottom:none}
+.tbl .tr::before{content:'';position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 2px 2px 0;background:var(--r)}
+.n{text-align:right;font-variant-numeric:tabular-nums}
+.when{color:#9aa2ab}
+.item{display:flex;align-items:center;gap:10px;min-width:0}
+.item img{width:44px;height:33px;object-fit:contain;flex:none}
+.item b{font-weight:600;font-size:13px;white-space:nowrap;display:block}
+.item small{font-size:11px;color:#8a929b;display:block;margin-top:-1px}
+.flags{display:flex;gap:5px;white-space:nowrap}
+.pill{font-size:10.5px;line-height:16px;padding:0 7px;border-radius:999px;border:1px solid;display:inline-flex;align-items:center;gap:4px}
+.pill.st{color:#f0904f;border-color:rgba(240,144,79,.55)}
+.pill.sv{color:#ffd54a;border-color:rgba(255,213,74,.5)}
+.pill.warn{color:#e6c46e;border-color:rgba(230,196,110,.45)}
+.pill.late{color:#8fb8ff;border-color:rgba(143,184,255,.4)}
+.up{color:#6fd39a}.down{color:#ef7a7a}
+.src{color:#b9c0c9}
+.statusbar{height:28px;flex:none;display:flex;align-items:center;gap:22px;padding:0 14px;background:#16181b;border-top:1px solid #24272b;font-size:11.5px;color:#8a929b}
+.statusbar .r{margin-left:auto;color:#c9a95c}
+.win{background:#0b1119;color:#e6ebf1;font-family:Bahnschrift,'Segoe UI',sans-serif}
+.titlebar{background:#070b11;border-bottom:1px solid rgba(222,155,53,.35)}
+.logo{clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);border-radius:0;background:#de9b35}
+.ttl{letter-spacing:2px;text-transform:uppercase;font-weight:600}
+.status{border-radius:0;background:rgba(93,121,174,.16);color:#a9c1ec;letter-spacing:1px;text-transform:uppercase;font-size:11px}
+.status i{background:#7fa0e0;box-shadow:0 0 6px #7fa0e0}
+nav{background:#070b11;border-right:1px solid rgba(93,121,174,.2)}
+nav a{border-radius:0;text-transform:uppercase;letter-spacing:1.5px;font-size:13px}
+nav a.on{background:linear-gradient(90deg,rgba(222,155,53,.22),transparent)}
+nav a.on::before{background:#de9b35;top:0;bottom:0;border-radius:0}
+nav a em{border-radius:0;background:#de9b35;color:#0b1119}
+nav .bottom{text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:#6f7f95}
+h1{font-size:24px;text-transform:uppercase;letter-spacing:3px;font-weight:700}
+.btn{border-radius:0;background:#de9b35;color:#0b1119;border:none;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+kbd{color:#0b1119;border-color:rgba(11,17,25,.45)}
+.kpi,.card{border-radius:0;background:linear-gradient(180deg,rgba(17,26,40,.96),rgba(12,19,30,.96));border:1px solid rgba(93,121,174,.28);clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+.kpi{border-top:2px solid #de9b35}
+.kpi .l{text-transform:uppercase;letter-spacing:1.5px;font-size:11px;color:#7f8ea3}
+.kpi .v{color:#f3b350;font-weight:700;font-size:28px}
+.kpi .v.sm{font-size:19px;text-transform:uppercase;color:#f5cf6a}
+.kpi .s{text-transform:uppercase;letter-spacing:.8px;font-size:11px;color:#8fa0b6}
+.kpi .s.up{color:#8fd19a}
+.card .hd{border-bottom:1px solid rgba(93,121,174,.2)}
+.card .hd b{text-transform:uppercase;letter-spacing:2px;font-size:13px}
+.muted{text-transform:uppercase;letter-spacing:1px;font-size:11px;color:#6f7f95}
+.link{color:#de9b35;text-transform:uppercase;letter-spacing:1px;font-size:11.5px}
+.seg{border-radius:0;background:transparent;border:1px solid rgba(93,121,174,.35)}
+.seg i{border-radius:0;letter-spacing:1px}
+.seg i.on{background:#5d79ae;color:#fff}
+.chart svg{margin-top:8px}
+.grid{stroke:rgba(93,121,174,.18)}
+.ax{fill:#7f8ea3;font:11px Bahnschrift}
+.ln{stroke:#de9b35}
+.s1{stop-color:#de9b35;stop-opacity:.25}.s2{stop-color:#de9b35;stop-opacity:0}
+.mk{fill:#0b1119;stroke:#7fa0e0}
+.tip rect{fill:#0f1826;stroke:#de9b35}
+.tip text{font-family:Bahnschrift;letter-spacing:.5px}
+.tbl .th{text-transform:uppercase;letter-spacing:1.5px;font-size:11px;color:#7f8ea3;border-color:rgba(93,121,174,.2)}
+.tbl .tr{border-bottom-color:rgba(93,121,174,.12)}
+.tbl .tr::before{border-radius:0;top:6px;bottom:6px}
+.item b{text-transform:uppercase;letter-spacing:.5px;font-size:13.5px}
+.pill{border-radius:0;text-transform:uppercase;letter-spacing:.8px;font-size:10px}
+.statusbar{background:#070b11;border-top:1px solid rgba(222,155,53,.35);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:#6f7f95}
+.statusbar .r{color:#de9b35}
+.srch{display:flex;align-items:center;gap:10px;padding:14px 16px}
+.srch .inp{flex:1;height:36px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#070b11;border:1px solid rgba(222,155,53,.55);font-size:14px;letter-spacing:.4px;color:#e6ebf1}
+.srch .inp svg{width:15px;height:15px;color:#8fa0b6}
+.srch .go{height:36px;display:flex;align-items:center;padding:0 18px;background:#de9b35;color:#0b1119;font:700 13px Bahnschrift;letter-spacing:1.5px;text-transform:uppercase;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.srch .clr{height:36px;display:flex;align-items:center;padding:0 14px;border:1px solid rgba(93,121,174,.45);font:600 12px Bahnschrift;letter-spacing:1.4px;text-transform:uppercase;color:#c9d2de}
+.hint{padding:0 16px 12px;font-size:11px;letter-spacing:.6px;color:#6f7f95;display:flex;gap:18px}
+.hint b{color:#8fd19a;font-weight:600}
+.prof{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:26px;align-items:center;padding:14px 16px}
+.av{width:60px;height:60px;display:grid;place-items:center;background:linear-gradient(135deg,#2a3a55,#16202f);border:1px solid rgba(93,121,174,.45);font:700 22px Bahnschrift;color:#9fb0c6;letter-spacing:1px}
+.pn{font:700 22px Bahnschrift;letter-spacing:1px;text-transform:uppercase}
+.pm{font-size:11.5px;letter-spacing:.7px;color:#8fa0b6;margin-top:3px;text-transform:uppercase}
+.pm .ok{color:#8fd19a}
+.kv .l{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#7f8ea3}
+.kv .v{font:700 26px Bahnschrift;color:#f3b350;font-variant-numeric:tabular-nums}
+.kv .v.w{color:#eef2f7}
+.kv .s{font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:#8fa0b6}
+.rbar{display:flex;height:6px;gap:2px;margin:0 16px 14px}
+.fbar{display:flex;align-items:center;gap:8px;padding:0 16px;height:44px;border-bottom:1px solid rgba(93,121,174,.2)}
+.fbar b{font:600 13px Bahnschrift;letter-spacing:2px;text-transform:uppercase;margin-right:8px}
+.fch{font:600 11px Bahnschrift;letter-spacing:1.2px;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(93,121,174,.35);color:#c9d2de}
+.fch.on{background:#5d79ae;border-color:#5d79ae;color:#fff}
+.fbar .sp{flex:1}
+.grid8{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;padding:12px 16px 14px}
+.tile{position:relative;height:196px;overflow:hidden;background:radial-gradient(120% 60% at 50% 0%,color-mix(in srgb,var(--r) 45%,transparent),transparent 72%),linear-gradient(180deg,#111a28,#0b121c);border:1px solid rgba(93,121,174,.25);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
+.tile.gold{border-color:rgba(245,207,106,.6)}
+.tile img{display:block;width:100%;height:88px;object-fit:contain;margin-top:10px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.tile .t{position:absolute;left:10px;right:10px;bottom:12px}
+.tile .rr{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--r)}
+.tile .wp{font-size:9.5px;letter-spacing:1px;color:#9fb0c6;text-transform:uppercase;margin-top:1px}
+.tile .sk{font:700 14px Bahnschrift;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .wr{font-size:9.5px;letter-spacing:.6px;color:#8fa0b6;margin-top:1px}
+.tile .px{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px}
+.tile .px b{font:700 16px Bahnschrift;color:#f3b350}
+.tile .px small{font-size:8.5px;letter-spacing:1px;color:#7f8ea3;text-transform:uppercase}
+.tile .fl{position:absolute;top:8px;right:8px;display:flex;gap:3px}
+.tile .fl i{font-style:normal;font:600 8.5px Bahnschrift;letter-spacing:.8px;padding:0 4px;line-height:12px;border:1px solid}
+.tile .fl .st{color:#ff9b5e;border-color:#cf6a32}.tile .fl .sv{color:#ffd54a;border-color:#c9a400}.tile .fl .wm{color:#f3b350;border-color:rgba(243,179,80,.6)}
+.tile .rs{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--r)}
+.foot2{display:flex;gap:16px;align-items:center;padding:0 16px 14px;font-size:11px;letter-spacing:.6px;color:#6f7f95}
+.foot2 .link{margin-left:auto}</style></head><body><div class="caption"><b>Main window · Player lookup (new tab)</b><span>Check what another player has, once. Nothing about them is stored.</span></div><div class="win"><div class="titlebar"><span class="logo"></span><span class="ttl">CS2 Drop Checker</span><span class="status"><i></i>Watching · cs2.exe running · next poll in 46 s</span><span class="wbtns"><span>—</span><span>☐</span><span>✕</span></span></div>
+<div class="body"><nav><a><svg viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="5.5" height="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="1.5" width="5.5" height="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="1.5" y="9" width="5.5" height="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5.5" height="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Overview</a><a><svg viewBox="0 0 16 16"><path d="M8 1.5v8M4.5 6.5 8 10l3.5-3.5M1.5 10.5v4h13v-4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Drops<em>3</em></a><a><svg viewBox="0 0 16 16"><path d="M1.5 4.5 8 1.5l6.5 3v7L8 14.5l-6.5-3zM1.5 4.5 8 7.5l6.5-3M8 7.5v7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Inventory</a><a class="on"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.6 10.6 14.5 14.5" stroke="currentColor" stroke-width="1.6"/></svg>Lookup</a><a><svg viewBox="0 0 16 16"><path d="M1.5 4h13M1.5 8h13M1.5 12h13" stroke="currentColor" stroke-width="1.4"/><circle cx="5" cy="4" r="1.8" fill="#16181b" stroke="currentColor" stroke-width="1.4"/><circle cx="11" cy="8" r="1.8" fill="#16181b" stroke="currentColor" stroke-width="1.4"/><circle cx="6" cy="12" r="1.8" fill="#16181b" stroke="currentColor" stroke-width="1.4"/></svg>Settings</a><div class="bottom">SteamID64 76561198••••••42<br>EUR · Steam → Skinport<br>Starts with Windows</div></nav>
+<main><div class="head"><h1>Player lookup</h1><span class="muted">One-time · nothing is saved</span></div>
+<div class="card"><div class="srch"><div class="inp"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10.6 10.6 14.5 14.5" stroke="currentColor" stroke-width="1.6"/></svg>steamcommunity.com/id/kova_cs</div><span class="go">Look up</span><span class="clr">Clear</span></div><div class="hint"><span>Paste a profile link, SteamID64 or custom name.</span><span><b>✓</b> Not saved to history, not shown in recent searches, SteamID masked in logs. Cleared when you leave this tab.</span></div></div>
+<div class="card"><div class="prof"><div class="av">KV</div><div><div class="pn">Kova</div><div class="pm">SteamID64 7656119••••••••17 · <span class="ok">Inventory public</span> · fetched 12 s ago</div><div class="pm">Items they got by trade or purchase in the last 7 days are hidden by Steam</div></div><div class="kv"><div class="l">Inventory value</div><div class="v">€3,264.18</div><div class="s">Steam 24 h median</div></div><div class="kv"><div class="l">Items</div><div class="v w">362</div><div class="s">341 priced</div></div><div class="kv"><div class="l">Most valuable</div><div class="v w" style="font-size:18px;padding:5px 0 3px">★ Karambit | Doppler</div><div class="s">€1,376.00</div></div></div><div class="rbar"><i style="flex:1813.76;background:#e4ae39"></i><i style="flex:412.4;background:#eb4b4b"></i><i style="flex:296.1;background:#d32ce6"></i><i style="flex:318.55;background:#8847ff"></i><i style="flex:201.92;background:#4b69ff"></i><i style="flex:221.45;background:#b0c3d9"></i></div></div>
+<div class="card"><div class="fbar"><b>Items</b><span class="fch on">All 362</span><span class="fch">Knives &amp; gloves 2</span><span class="fch">Covert 9</span><span class="fch">Classified 21</span><span class="fch">Restricted 38</span><span class="fch">Cases 74</span><span class="sp"></span><span class="fch">Sort: value ▾</span></div><div class="grid8"><div class="tile gold" style="--r:#e4ae39"><div class="fl"><i class="wm">Phase?</i></div><img src="assets/karambit.png"><div class="t"><div class="rr">★ Covert Knife</div><div class="wp">★ Karambit</div><div class="sk">Doppler</div><div class="wr">FN · 0.0112</div><div class="px"><b>€1,376.00</b><small>Steam</small></div></div><div class="rs"></div></div><div class="tile gold" style="--r:#e4ae39"><img src="assets/gloves.png"><div class="t"><div class="rr">★ Extraordinary</div><div class="wp">★ Sport Gloves</div><div class="sk">Vice</div><div class="wr">FT · 0.2544</div><div class="px"><b>€437.76</b><small>Steam</small></div></div><div class="rs"></div></div><div class="tile" style="--r:#eb4b4b"><div class="fl"><i class="wm">4 stickers</i></div><img src="assets/awp.png"><div class="t"><div class="rr">Covert</div><div class="wp">AWP</div><div class="sk">Asiimov</div><div class="wr">FT · 0.2611</div><div class="px"><b>€108.73</b><small>Steam</small></div></div><div class="rs"></div></div><div class="tile" style="--r:#eb4b4b"><div class="fl"><i class="st">ST</i></div><img src="assets/m4.png"><div class="t"><div class="rr">Covert</div><div class="wp">StatTrak™ M4A4</div><div class="sk">Temukau</div><div class="wr">FT · 0.1693</div><div class="px"><b>€34.66</b><small>Steam</small></div></div><div class="rs"></div></div><div class="tile" style="--r:#8847ff"><div class="fl"><i class="st">ST</i></div><img src="assets/ak.png"><div class="t"><div class="rr">Restricted</div><div class="wp">StatTrak™ AK-47</div><div class="sk">Slate</div><div class="wr">MW · 0.0934</div><div class="px"><b>€19.70</b><small>Steam</small></div></div><div class="rs"></div></div><div class="tile" style="--r:#d32ce6"><img src="assets/classified.png"><div class="t"><div class="rr">Classified</div><div class="wp">M4A1-S</div><div class="sk">Decimator</div><div class="wr">FT · 0.2236</div><div class="px"><b>€12.85</b><small>Steam</small></div></div><div class="rs"></div></div><div class="tile" style="--r:#b0c3d9"><div class="fl"><i class="sv">SV</i></div><img src="assets/p250souv.png"><div class="t"><div class="rr">Consumer</div><div class="wp">Souvenir P250</div><div class="sk">Sand Dune</div><div class="wr">FT · 0.2210</div><div class="px"><b>€0.86</b><small>Steam</small></div></div><div class="rs"></div></div><div class="tile" style="--r:#4b69ff"><img src="assets/glock.png"><div class="t"><div class="rr">Mil-Spec</div><div class="wp">Glock-18</div><div class="sk">Clear Polymer</div><div class="wr">FT · 0.3105</div><div class="px"><b>€0.44</b><small>Steam</small></div></div><div class="rs"></div></div></div><div class="foot2"><span>Base prices ignore stickers, charms, float and Doppler phase · flagged items may be worth more</span><span class="link">Show all 362 →</span></div></div>
+</main></main></div>
+<div class="statusbar"><span>Last poll 14 s ago · 214 items</span><span>Prices: Steam 24 h median 2 h ago · Skinport fallback 3 min ago</span><span class="r">Prices ignore stickers, charms, float and Doppler phase</span></div></div></body></html>
