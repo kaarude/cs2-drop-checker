@@ -2,18 +2,21 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Cs2DropChecker.App.Services;
+using Cs2DropChecker.App.Views;
+using Cs2DropChecker.Core.Models;
 using Cs2DropChecker.Core.Pricing;
 using Cs2DropChecker.Core.Util;
 
 namespace Cs2DropChecker.App.ViewModels;
 
-public enum Page { Overview, Drops, Inventory, Market, Lookup, Settings }
+public enum Page { Overview, Drops, Profit, Inventory, Market, Friends, Alerts, Lookup, Settings }
 
 /// <summary>Shell state: navigation, title-bar status, sidebar footer and status bar.</summary>
 public sealed partial class MainViewModel : ObservableObject
 {
     private readonly AppServices _s;
     private readonly DispatcherTimer _tick;
+    private readonly DispatcherTimer _flashTimer;
     private int _ticks;
     private bool _dropsDirty = true;
 
@@ -26,7 +29,21 @@ public sealed partial class MainViewModel : ObservableObject
         Market = new MarketViewModel(s);
         Lookup = new LookupViewModel(s);
         Settings = new SettingsViewModel(s);
+        Profit = new ProfitViewModel(s);
+        Friends = new FriendsViewModel(s);
+        Alerts = new AlertsViewModel(s);
         _current = Overview;
+        _flashTimer = new DispatcherTimer(DispatcherPriority.Background, s.Ui) { Interval = TimeSpan.FromSeconds(6) };
+        _flashTimer.Tick += (_, _) =>
+        {
+            _flashTimer.Stop();
+            Flash = "";
+        };
+        s.Watcher.OpeningsChanged += (_, _) =>
+        {
+            Overview.ReloadProfit();
+            if (Page == Page.Profit) Profit.Reload();
+        };
 
         s.Watcher.StatusChanged += (_, _) => UpdateStatus();
         s.Watcher.InventoryChanged += (_, _) => OnInventoryChanged();
@@ -35,6 +52,7 @@ public sealed partial class MainViewModel : ObservableObject
             _dropsDirty = true;
             Overview.Reload();
             if (Page == Page.Drops) LoadDrops();
+            if (Page == Page.Profit) Profit.Reload();
             UpdateBadge();
         };
         s.Watcher.DropPriced += (_, e) =>
@@ -53,6 +71,10 @@ public sealed partial class MainViewModel : ObservableObject
                 if (Page == Page.Drops) LoadDrops();
             }
             if (account) Lookup.Clear();
+            if (account || currency || e.Old.Profit.KeyPrice != e.New.Profit.KeyPrice) Overview.ReloadProfit();
+            if (Page == Page.Profit) Profit.Reload();
+            if (Page == Page.Friends) Friends.Reload();
+            if (Page == Page.Alerts) Alerts.Reload();
             Inventory.Refresh(pricesOnly: false);
             UpdateFooter();
             UpdateBadge();
@@ -78,6 +100,9 @@ public sealed partial class MainViewModel : ObservableObject
     public MarketViewModel Market { get; }
     public LookupViewModel Lookup { get; }
     public SettingsViewModel Settings { get; }
+    public ProfitViewModel Profit { get; }
+    public FriendsViewModel Friends { get; }
+    public AlertsViewModel Alerts { get; }
 
     [ObservableProperty] private Page _page = Page.Overview;
     [ObservableProperty] private object _current;
@@ -94,6 +119,9 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _lastPollText = "";
     [ObservableProperty] private string _pricesText = "";
     [ObservableProperty] private string _refreshKey = "";
+    [ObservableProperty] private string _flash = "";
+    [ObservableProperty] private string _flashKind = "";
+    [ObservableProperty] private string _shareKey = "";
 
     partial void OnPageChanged(Page oldValue, Page newValue)
     {
@@ -107,6 +135,9 @@ public sealed partial class MainViewModel : ObservableObject
             Page.Market => Market,
             Page.Lookup => Lookup,
             Page.Settings => Settings,
+            Page.Profit => Profit,
+            Page.Friends => Friends,
+            Page.Alerts => Alerts,
             _ => Overview,
         };
         switch (newValue)
@@ -128,6 +159,15 @@ public sealed partial class MainViewModel : ObservableObject
             case Page.Overview:
                 Overview.RefreshValue();
                 break;
+            case Page.Profit:
+                Profit.Reload();
+                break;
+            case Page.Friends:
+                Friends.Reload();
+                break;
+            case Page.Alerts:
+                Alerts.Reload();
+                break;
         }
     }
 
@@ -142,6 +182,85 @@ public sealed partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void ViewAllDrops() => Page = Page.Drops;
+
+    [RelayCommand]
+    private void OpenProfit() => Page = Page.Profit;
+
+    [RelayCommand]
+    private void OpenAlerts() => Page = Page.Alerts;
+
+    /// <summary>Accepts a drop row or an item detail panel; drops keep their arrival info on the card.</summary>
+    [RelayCommand]
+    private async Task ShareDropAsync(object? target)
+    {
+        ShareResult r;
+        switch (target)
+        {
+            case DropRowViewModel row:
+                r = await _s.Share.ShareAsync(row.Record);
+                break;
+            case ItemDetailsViewModel { Drop: { } drop }:
+                r = await _s.Share.ShareAsync(drop);
+                break;
+            case ItemDetailsViewModel d:
+                r = await _s.Share.ShareAsync(d.Item, d.PriceText, "In my inventory");
+                break;
+            default:
+                return;
+        }
+        ShowFlash(r.Message, r.Ok ? "ok" : "warn");
+    }
+
+    [RelayCommand]
+    private async Task ShareLastDropAsync()
+    {
+        var r = await _s.Share.ShareLastDropAsync();
+        ShowFlash(r.Message, r.Ok ? "ok" : "warn");
+    }
+
+    /// <summary>Opens the Drops page with the clicked row's details; clicking the open row again closes them.</summary>
+    [RelayCommand]
+    private void SelectDrop(DropRowViewModel? row)
+    {
+        if (row is null) return;
+        if (Page == Page.Drops && Drops.SelectedRow?.Id == row.Id)
+        {
+            Drops.SelectedRow = null;
+            return;
+        }
+        Page = Page.Drops;
+        Drops.SelectedRow = Drops.Rows.FirstOrDefault(r => r.Id == row.Id) ?? row;
+    }
+
+    [RelayCommand]
+    private void CreateAlert(InventoryItem? item)
+    {
+        if (item is null) return;
+        Page = Page.Alerts;
+        Alerts.PrepareFor(item);
+    }
+
+    /// <summary>The Steam sign-in step, shared by every feature that needs it.</summary>
+    [RelayCommand]
+    private async Task SignInAsync()
+    {
+        var ok = await SignInWindow.RunAsync(_s);
+        if (ok)
+        {
+            _s.Mutate(x => x.UseSignIn = true);
+            _s.Watcher.PollNow();
+        }
+        Settings.UpdateSession();
+        Friends.UpdateSession();
+    }
+
+    public void ShowFlash(string text, string kind)
+    {
+        Flash = text;
+        FlashKind = kind;
+        _flashTimer.Stop();
+        _flashTimer.Start();
+    }
 
     private void LoadDrops()
     {
@@ -172,6 +291,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (Page == Page.Inventory) Inventory.Tick();
         if (Page == Page.Lookup) Lookup.Tick();
         if (Page == Page.Market && _ticks % 10 == 0) Market.Tick();
+        if (Page == Page.Friends && _ticks % 15 == 0) Friends.UpdateRefreshText();
         if (_ticks % 60 == 0) Overview.RefreshWhen();
     }
 
@@ -234,6 +354,7 @@ public sealed partial class MainViewModel : ObservableObject
         var s = _s.Settings;
         FootId = s.SteamId64 == 0 ? "No profile yet" : "SteamID64 " + SteamIdMask.Mask(s.SteamId64);
         RefreshKey = s.Hotkeys.RefreshNow;
+        ShareKey = s.Hotkeys.ShareLastDrop;
     }
 
     private void UpdateUpdate()

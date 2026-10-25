@@ -189,7 +189,8 @@ public sealed partial class TileViewModel : ObservableObject
         switch (sell?.State)
         {
             case null:
-                SellKind = SellBadge = SellTip = "";
+                SellKind = SellBadge = "";
+                SellTip = "Click to compare where to sell";
                 break;
             case SellState.Sellable:
                 SellKind = "sellable";
@@ -433,10 +434,10 @@ public sealed partial class ItemGridViewModel : ObservableObject
     [RelayCommand]
     private void OpenTile(TileViewModel? tile)
     {
-        if (tile is null || !tile.Interactive) return;
+        if (tile is null) return;
         if (SelectMode)
         {
-            ToggleCheck(tile);
+            if (tile.Interactive) ToggleCheck(tile);
             return;
         }
         TileOpened?.Invoke(this, tile);

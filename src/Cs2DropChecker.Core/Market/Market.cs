@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Cs2DropChecker.Core.Pricing;
+using Cs2DropChecker.Core.Selling;
 
 namespace Cs2DropChecker.Core.Market;
 
@@ -15,10 +16,10 @@ public sealed record WalletInfo
     public long DelayedBalance { get; init; }
     public long MaxBalance { get; init; }
     public bool HasFee { get; init; } = true;
-    public decimal FeePercent { get; init; } = 0.05m;
-    public long FeeMinimum { get; init; } = 1;
+    public decimal FeePercent { get; init; } = SellFees.SteamTransactionFee;
+    public long FeeMinimum { get; init; } = MarketFees.ToCents(SellFees.SteamMinimumFee);
     public long FeeBase { get; init; }
-    public decimal PublisherFeePercent { get; init; } = 0.10m;
+    public decimal PublisherFeePercent { get; init; } = SellFees.SteamGameFee;
 
     public CurrencyInfo Currency => Currencies.FromSteamCode(CurrencyCode);
     public string CurrencyIso => Currency.Code;

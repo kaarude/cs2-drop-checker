@@ -175,6 +175,8 @@ public sealed partial class OverlayViewModel : ObservableObject
     [ObservableProperty] private string _toastKey = "";
     [ObservableProperty] private bool _toastOn;
     [ObservableProperty] private double _scale = 0.8;
+    [ObservableProperty] private string _noticeTitle = "";
+    [ObservableProperty] private string _noticeBody = "";
 
     public ValuePanelViewModel Value { get; } = new();
 

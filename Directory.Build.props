@@ -3,7 +3,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>kaarude</Authors>
     <Product>CS2 Drop Checker</Product>
     <Copyright>Copyright (c) 2026 kaarude</Copyright>

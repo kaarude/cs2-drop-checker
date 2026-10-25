@@ -89,6 +89,7 @@ public partial class App : Application
 
         _vm = new MainViewModel(_s);
         CreateTray();
+        _s.Notifier.Tray = _tray;
         _s.Watcher.InventoryChanged += (_, _) => UpdateTrayTip();
         _single.ListenForShow(() => Dispatcher.BeginInvoke(ShowMain));
 
@@ -116,6 +117,9 @@ public partial class App : Application
             }
         }
         s.Watcher.Start();
+        s.Alerts.Start();
+        s.Friends.Start();
+        s.Weekly.Start();
     }
 
     private void CreateTray()
@@ -192,7 +196,18 @@ public partial class App : Application
                 s.Watcher.PollNow();
                 s.Overlay?.ShowToast("Checking inventory", s.Settings.Hotkeys.RefreshNow, true);
                 break;
+            case HotkeyAction.ShareLastDrop:
+                _ = ShareLastDropAsync();
+                break;
         }
+    }
+
+    private async Task ShareLastDropAsync()
+    {
+        var s = Services;
+        var r = await s.Share.ShareLastDropAsync();
+        s.Overlay?.ShowToast(r.Ok ? (s.Settings.Share.CopyToClipboard ? "Share card copied" : "Share card saved") : r.Message, s.Settings.Hotkeys.ShareLastDrop, r.Ok);
+        _vm?.ShowFlash(r.Message, r.Ok ? "ok" : "warn");
     }
 
     private void OnSettingsChanged(object? sender, SettingsChangedEventArgs e)
@@ -219,7 +234,7 @@ public partial class App : Application
             s.Watcher.Reset(accountChanged: false);
             s.Watcher.RefreshPricesNow();
         }
-        if (o.Hotkeys.ToggleOverlay != n.Hotkeys.ToggleOverlay || o.Hotkeys.ShowTotalValue != n.Hotkeys.ShowTotalValue || o.Hotkeys.RefreshNow != n.Hotkeys.RefreshNow)
+        if (!HotkeyService.Entries(o.Hotkeys).SequenceEqual(HotkeyService.Entries(n.Hotkeys)))
             s.Hotkeys.Apply(n.Hotkeys);
         if (o.StartWithWindows != n.StartWithWindows || o.FirstRunDone != n.FirstRunDone)
             StartupRegistration.Apply(n.StartWithWindows && n.FirstRunDone);

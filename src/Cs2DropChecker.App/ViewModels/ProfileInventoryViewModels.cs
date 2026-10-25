@@ -30,8 +30,23 @@ public abstract partial class ProfileInventoryViewModel : ObservableObject
     [ObservableProperty] private bool _bestIsStar;
     [ObservableProperty] private IReadOnlyList<ValueGroup> _groups = InventoryValuation.EmptyGroups();
     [ObservableProperty] private bool _hasData;
+    [ObservableProperty] private ItemDetailsViewModel? _details;
+    [ObservableProperty] private bool _showSignIn;
+
+    protected ProfileInventoryViewModel() => Grid.TileOpened += (_, t) => OpenTile(t);
 
     public ItemGridViewModel Grid { get; } = new();
+
+    protected abstract ItemDetailsViewModel MakeDetails(InventoryItem item);
+
+    /// <summary>Default for a clicked tile: toggle the details panel with the where-to-sell comparison.</summary>
+    protected virtual void OpenTile(TileViewModel tile) => ToggleDetails(tile);
+
+    protected void ToggleDetails(TileViewModel tile) =>
+        Details = Details?.Item == tile.Item ? null : MakeDetails(tile.Item);
+
+    [RelayCommand]
+    private void CloseDetails() => Details = null;
 
     protected void FillHeader(InventoryValue value, string? sourceId, string currency)
     {
@@ -67,6 +82,7 @@ public abstract partial class ProfileInventoryViewModel : ObservableObject
         BestIsStar = false;
         Groups = InventoryValuation.EmptyGroups();
         HasData = false;
+        Details = null;
         Grid.Clear();
     }
 
@@ -83,12 +99,13 @@ public sealed partial class InventoryViewModel : ProfileInventoryViewModel
     {
         s = services;
         s.Market.Changed += (_, _) => ApplySell();
-        Grid.TileOpened += (_, t) => OpenSell(t);
         Grid.SellSelectedRequested += (_, tiles) => OpenBulkSell(tiles);
     }
 
     /// <summary>Selling needs a signed-in snapshot of the watched account and the built-in browser signed in to it.</summary>
     [ObservableProperty] private bool _canSell;
+
+    protected override ItemDetailsViewModel MakeDetails(InventoryItem item) => ItemDetailsViewModel.For(s, item);
 
     public void Refresh(bool pricesOnly)
     {
@@ -112,8 +129,10 @@ public sealed partial class InventoryViewModel : ProfileInventoryViewModel
         Snapshot = snap;
         FillHeader(w.Value, w.ValueSourceId, settings.Currency);
         HiddenNote = snap.HiddenCount > 0
-            ? $"{snap.HiddenCount} item{(snap.HiddenCount == 1 ? "" : "s")} you got by trade or purchase in the last 7 days {(snap.HiddenCount == 1 ? "is" : "are")} hidden by Steam until the hold ends. Sign in to see them now."
+            ? $"{snap.HiddenCount} item{(snap.HiddenCount == 1 ? "" : "s")} you got by trade or purchase in the last 7 days {(snap.HiddenCount == 1 ? "is" : "are")} hidden by Steam until the hold ends. Sign in to Steam to see trade-protected items."
             : "";
+        ShowSignIn = snap.HiddenCount > 0 && !s.Session.IsSignedIn;
+        if (!ReferenceEquals(snap, _shown) && Details is not null) Details = null;
         if (!ReferenceEquals(snap, _shown) || !pricesOnly)
         {
             if (!ReferenceEquals(snap, _shown)) Grid.SetItems(snap.Items, s.Prices.GetCached);
@@ -143,10 +162,16 @@ public sealed partial class InventoryViewModel : ProfileInventoryViewModel
         Grid.SetSell(can ? s.Market.Evaluate : null, can ? s.Market.ListingFor : null);
     }
 
-    private void OpenSell(TileViewModel tile)
+    /// <summary>The sell window (which includes the market comparison) when the item can go to the Steam Market, else the details panel.</summary>
+    protected override void OpenTile(TileViewModel tile)
     {
-        if (!CanSell || tile.Sell is null) return;
-        SellWindow.Open(s, tile.Item, tile.Quote);
+        if (CanSell && tile.Interactive)
+        {
+            Details = null;
+            SellWindow.Open(s, tile.Item, tile.Quote);
+            return;
+        }
+        ToggleDetails(tile);
     }
 
     private void OpenBulkSell(IReadOnlyList<TileViewModel> tiles)
@@ -166,6 +191,8 @@ public sealed partial class InventoryViewModel : ProfileInventoryViewModel
 public sealed partial class LookupViewModel(AppServices s) : ProfileInventoryViewModel
 {
     private CancellationTokenSource? _cts;
+
+    protected override ItemDetailsViewModel MakeDetails(InventoryItem item) => ItemDetailsViewModel.For(s, item, own: false);
 
     [ObservableProperty] private string _query = "";
     [ObservableProperty] private bool _busy;

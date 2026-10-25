@@ -130,6 +130,7 @@ public sealed partial class AppDatabase
             v.CommandText = $"INSERT INTO schema_version(version) VALUES ({SchemaVersion})";
             v.ExecuteNonQuery();
         }
+        Migrate(c);
     }
 
     private static long Ms(DateTimeOffset t) => t.ToUnixTimeMilliseconds();
