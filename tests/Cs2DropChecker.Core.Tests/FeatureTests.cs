@@ -388,6 +388,7 @@ public sealed class FriendsTests
             new() { Kind = ArrivalKind.CaseOpened, SeenAt = weekStart.AddHours(2), PriceAtDrop = 12m, Currency = "EUR", Item = new() { Name = "Knife" } },
             new() { Kind = ArrivalKind.WeeklyDrop, SeenAt = weekStart.AddHours(-2), PriceAtDrop = 99m, Currency = "EUR", Item = new() { Name = "Old" } },
             new() { Kind = ArrivalKind.Moved, SeenAt = weekStart.AddHours(3), PriceAtDrop = 50m, Currency = "EUR", Item = new() { Name = "Moved" } },
+            new() { Kind = ArrivalKind.Purchase, SeenAt = weekStart.AddHours(4), PriceAtDrop = 80m, Currency = "EUR", Item = new() { Name = "Bought" } },
         };
         var you = Leaderboard.ForYou(1, "Me", "", drops, 400m, ProfitSummary.Empty, "EUR", now);
         Assert.Equal("Knife", you.BestName);
@@ -399,6 +400,7 @@ public sealed class FriendsTests
         var arrivals = new[]
         {
             new FriendArrival { FriendId = 2, SeenAt = weekStart.AddHours(5), Kind = ArrivalKind.CaseOpened, Price = 20m, Currency = "EUR", CasePrice = 1m, KeyPrice = 2m, Item = new() { Name = "Glock" } },
+            new FriendArrival { FriendId = 2, SeenAt = weekStart.AddHours(6), Kind = ArrivalKind.LatePurchase, Price = 300m, Currency = "EUR", Item = new() { Name = "Bought" } },
         };
         var pal = Leaderboard.ForFriend(friend, arrivals, "EUR", now);
         Assert.Equal(20m, pal.WeekValue);

@@ -152,11 +152,14 @@ public sealed record LeaderboardRow
 
 public static class Leaderboard
 {
+    /// <summary>Weekly drops, openings and trade-ups count; bought or traded items and storage moves don't.</summary>
+    public static bool CountsAsDrop(ArrivalKind kind) => ArrivalKindText.ShowsCard(kind) && !ArrivalKindText.IsPurchase(kind);
+
     public static LeaderboardRow ForYou(ulong id, string name, string avatar, IEnumerable<DropRecord> drops, decimal? inventoryValue,
         ProfitSummary lifetime, string currency, DateTimeOffset now)
     {
         var start = Cs2Week.Start(now);
-        var week = drops.Where(d => d.SeenAt >= start && ArrivalKindText.ShowsCard(d.Kind)).ToList();
+        var week = drops.Where(d => d.SeenAt >= start && CountsAsDrop(d.Kind)).ToList();
         var priced = week.Where(d => d.PriceAtDrop.HasValue && d.Currency == currency).ToList();
         var best = priced.MaxBy(d => d.PriceAtDrop!.Value);
         return new LeaderboardRow
@@ -180,7 +183,7 @@ public static class Leaderboard
     {
         var start = Cs2Week.Start(now);
         var all = arrivals.Where(a => a.Currency is null || a.Currency == currency).ToList();
-        var week = all.Where(a => a.SeenAt >= start).ToList();
+        var week = all.Where(a => a.SeenAt >= start && CountsAsDrop(a.Kind)).ToList();
         var priced = week.Where(a => a.Price.HasValue).ToList();
         var best = priced.MaxBy(a => a.Price!.Value);
         var openings = all.Where(a => a.CaseNet.HasValue).ToList();

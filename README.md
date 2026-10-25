@@ -110,7 +110,7 @@ The Share button (on each drop row, in the item details, "Share last drop" on Ov
 
 ### Friends leaderboard
 
-Compare with friends: best drop this CS2 week, total drop value this week, inventory value and case profit/loss.
+Compare with friends: best drop this CS2 week, total drop value this week, inventory value and case profit/loss. Weekly drops, case openings and trade-ups count as drops; bought or traded items don't.
 
 - **Add by hand:** paste any public profile link, custom URL name or SteamID64. Works without signing in.
 - **From your Steam friends list:** needs the Steam sign-in. Tick the friends to compare with.
