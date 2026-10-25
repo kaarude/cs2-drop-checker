@@ -4,8 +4,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Cs2DropChecker.App.Services;
 using Cs2DropChecker.Core.Detection;
+using Cs2DropChecker.Core.Market;
 using Cs2DropChecker.Core.Models;
 using Cs2DropChecker.Core.Pricing;
+using Cs2DropChecker.Core.Storage;
 using Cs2DropChecker.Core.Valuation;
 
 namespace Cs2DropChecker.App.ViewModels;
@@ -137,14 +139,7 @@ public sealed partial class TileViewModel : ObservableObject
         RarityHex = item.RarityHex;
         Gold = item.IsStar;
         Tier = DropClassifierTier(item);
-        Badge = item.IsDoppler ? "Phase?"
-            : item.StickerCount > 1 ? $"{item.StickerCount} stickers"
-            : item.StickerCount == 1 ? "1 sticker"
-            : item.ContextId == "16" ? "TP"
-            : item.IsStatTrak ? "ST"
-            : item.IsSouvenir ? "SV"
-            : item.StorageCount is { } n ? $"{n} inside"
-            : "";
+        _badge = ComputeBadge(item, showProtected: true);
         AssetNumber = long.TryParse(item.AssetId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var a) ? a : 0;
         SetQuote(q);
     }
@@ -157,22 +152,98 @@ public sealed partial class TileViewModel : ObservableObject
     public string Wear { get; }
     public string RarityHex { get; }
     public bool Gold { get; }
-    public string Badge { get; }
     public int Tier { get; }
     public long AssetNumber { get; }
     public decimal Price { get; private set; }
 
     [ObservableProperty] private string _priceText = "";
     [ObservableProperty] private string _sourceText = "";
+    [ObservableProperty] private string _badge;
+
+    /// <summary>Empty when selling is off (Lookup, or not signed in).</summary>
+    [ObservableProperty] private string _sellKind = "";
+    [ObservableProperty] private string _sellBadge = "";
+    [ObservableProperty] private string _sellTip = "";
+    [ObservableProperty] private bool _isChecked;
+    [ObservableProperty] private bool _selectMode;
+
+    public PriceQuote? Quote { get; private set; }
+    public Sellability? Sell { get; private set; }
+    public ListingRow? Listing { get; private set; }
+    public bool CanCheck => Sell is { CanSell: true };
+    public bool Interactive => Sell is { State: not SellState.NotMarketable };
 
     public void SetQuote(PriceQuote? q)
     {
+        Quote = q;
         Price = q?.Price ?? 0;
         PriceText = q is null ? "—" : Money.Format(q.Price, q.Currency);
         SourceText = q is null ? "no price" : PriceSourceIds.CardName(q.SourceId);
     }
 
+    public void SetSell(Sellability? sell, ListingRow? listing, DateTimeOffset now)
+    {
+        Sell = sell;
+        Listing = listing;
+        Badge = ComputeBadge(Item, showProtected: sell is null);
+        switch (sell?.State)
+        {
+            case null:
+                SellKind = SellBadge = SellTip = "";
+                break;
+            case SellState.Sellable:
+                SellKind = "sellable";
+                SellBadge = "";
+                SellTip = "Click to sell · tick the box to sell several at once";
+                break;
+            case SellState.Listed:
+                var pending = listing?.State == ListingState.Pending;
+                SellKind = pending ? "pending" : "listed";
+                SellBadge = pending ? "Confirm" : "Listed";
+                SellTip = pending ? "Listed, waiting for your confirmation in the Steam Mobile app or email" : "Listed on the Steam Market";
+                break;
+            case SellState.Protected:
+                SellKind = "protected";
+                UpdateCountdown(now);
+                break;
+            default:
+                SellKind = "locked";
+                SellBadge = "";
+                SellTip = "This item can't be sold on the Steam Market";
+                break;
+        }
+        OnPropertyChanged(nameof(CanCheck));
+        OnPropertyChanged(nameof(Interactive));
+    }
+
+    public void UpdateCountdown(DateTimeOffset now)
+    {
+        if (Sell is not { State: SellState.Protected } s) return;
+        if (s.Until is { } until)
+        {
+            SellBadge = (s.Estimated ? "~" : "") + When.Left(until - now);
+            SellTip = (s.Estimated ? "Trade protected · sellable in about " : "Trade protected · sellable in ") + When.Left(until - now)
+                + " (" + When.Format(until) + ", " + until.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture) + ")";
+        }
+        else
+        {
+            SellBadge = "7d";
+            SellTip = "Trade protected for up to 7 days after it arrived";
+        }
+    }
+
     private static int DropClassifierTier(InventoryItem i) => i.IsStar ? 6 : 5 - InventoryValuation.GroupIndex(i);
+
+    /// <summary>With selling on, the sell badge shows protection instead of "TP".</summary>
+    private static string ComputeBadge(InventoryItem item, bool showProtected) =>
+        item.IsDoppler ? "Phase?"
+        : item.StickerCount > 1 ? $"{item.StickerCount} stickers"
+        : item.StickerCount == 1 ? "1 sticker"
+        : showProtected && item.ContextId == "16" ? "TP"
+        : item.IsStatTrak ? "ST"
+        : item.IsSouvenir ? "SV"
+        : item.StorageCount is { } n ? $"{n} inside"
+        : "";
 }
 
 public sealed record TileRow(IReadOnlyList<TileViewModel> Tiles);
@@ -196,16 +267,26 @@ public sealed partial class ItemGridViewModel : ObservableObject
         ("restricted", "Restricted"), ("milspec", "Mil-Spec"), ("case", "Cases"), ("other", "Other"),
     ];
 
+    private static readonly (string Key, string Label)[] SellGroups =
+        [("all", "All"), ("sellable", "Sellable"), ("fresh", "Fresh"), ("listed", "Listed")];
+
     private List<TileViewModel> _tiles = new();
+    private List<TileViewModel> _shownTiles = new();
+    private readonly HashSet<string> _checked = new(StringComparer.Ordinal);
+    private Func<InventoryItem, Sellability>? _sell;
+    private Func<string, ListingRow?>? _listing;
     private int _columns = 8;
     private string _selected = "all";
+    private string _sellSelected = "all";
 
     public ItemGridViewModel()
     {
         _sort = SortOptions[0];
+        foreach (var (key, label) in SellGroups) SellFilters.Add(new FilterChip(key, label) { IsSelected = key == "all" });
     }
 
     public ObservableCollection<FilterChip> Filters { get; } = new();
+    public ObservableCollection<FilterChip> SellFilters { get; } = new();
     public IReadOnlyList<Option> SortOptions { get; } =
     [
         new("value", "Sort: value"), new("rarity", "Sort: rarity"), new("name", "Sort: name"), new("newest", "Sort: newest"),
@@ -216,11 +297,31 @@ public sealed partial class ItemGridViewModel : ObservableObject
     [ObservableProperty] private Option _sort;
     [ObservableProperty] private int _shown;
     [ObservableProperty] private int _total;
+    [ObservableProperty] private bool _sellEnabled;
+    [ObservableProperty] private int _selectedCount;
+    [ObservableProperty] private string _selectedText = "";
+    [ObservableProperty] private int _checkableShown;
+
+    public bool SelectMode => SelectedCount > 0;
+
+    /// <summary>A tile was clicked outside selection mode.</summary>
+    public event EventHandler<TileViewModel>? TileOpened;
+    public event EventHandler<IReadOnlyList<TileViewModel>>? SellSelectedRequested;
+
+    public IReadOnlyList<TileViewModel> CheckedTiles => _tiles.Where(t => t.IsChecked).ToList();
 
     public static string GroupKey(InventoryItem i) =>
         i.IsStar ? "star"
         : i.IsContainer ? "case"
         : InventoryValuation.GroupIndex(i) switch { 1 => "covert", 2 => "classified", 3 => "restricted", 4 => "milspec", _ => "other" };
+
+    private static string SellKey(TileViewModel t) => t.Sell?.State switch
+    {
+        SellState.Sellable => "sellable",
+        SellState.Protected => "fresh",
+        SellState.Listed => "listed",
+        _ => "",
+    };
 
     public void SetItems(IEnumerable<InventoryItem> items, Func<string, PriceQuote?> price)
     {
@@ -236,22 +337,64 @@ public sealed partial class ItemGridViewModel : ObservableObject
         }
         if (Filters.All(f => f.Key != _selected)) _selected = "all";
         foreach (var f in Filters) f.IsSelected = f.Key == _selected;
+        ApplySell(DateTimeOffset.UtcNow);
         Rebuild();
     }
 
     public void RefreshPrices(Func<string, PriceQuote?> price)
     {
         foreach (var t in _tiles) t.SetQuote(price(t.Item.MarketHashName));
+        UpdateSelected();
+    }
+
+    /// <summary>Turns selling on (with the rules for each item) or off.</summary>
+    public void SetSell(Func<InventoryItem, Sellability>? sell, Func<string, ListingRow?>? listing)
+    {
+        var wasEnabled = SellEnabled;
+        _sell = sell;
+        _listing = listing;
+        SellEnabled = sell is not null;
+        if (!SellEnabled)
+        {
+            _checked.Clear();
+            if (_sellSelected != "all") SelectSellKey("all");
+        }
+        ApplySell(DateTimeOffset.UtcNow);
+        if (wasEnabled != SellEnabled || _sellSelected != "all") Rebuild();
+    }
+
+    private void ApplySell(DateTimeOffset now)
+    {
+        foreach (var t in _tiles)
+        {
+            t.SetSell(_sell?.Invoke(t.Item), _sell is null ? null : _listing?.Invoke(t.Item.AssetId), now);
+            t.IsChecked = t.CanCheck && _checked.Contains(t.Item.AssetId);
+        }
+        _checked.IntersectWith(_tiles.Where(t => t.IsChecked).Select(t => t.Item.AssetId));
+        var counts = _tiles.GroupBy(SellKey).ToDictionary(g => g.Key, g => g.Count());
+        foreach (var chip in SellFilters) chip.Count = chip.Key == "all" ? _tiles.Count : counts.GetValueOrDefault(chip.Key);
+        UpdateSelected();
+    }
+
+    /// <summary>Keeps protection countdowns current.</summary>
+    public void TickSell()
+    {
+        if (!SellEnabled) return;
+        var now = DateTimeOffset.UtcNow;
+        foreach (var t in _tiles) t.UpdateCountdown(now);
     }
 
     public void Clear()
     {
         _tiles = new();
+        _shownTiles = new();
+        _checked.Clear();
         Filters.Clear();
         Rows = [];
         Shown = Total = 0;
         Search = "";
         _selected = "all";
+        UpdateSelected();
     }
 
     public void SetColumns(int columns)
@@ -264,6 +407,7 @@ public sealed partial class ItemGridViewModel : ObservableObject
 
     partial void OnSearchChanged(string value) => Rebuild();
     partial void OnSortChanged(Option value) => Rebuild();
+    partial void OnSelectedCountChanged(int value) => OnPropertyChanged(nameof(SelectMode));
 
     [RelayCommand]
     private void SelectFilter(FilterChip chip)
@@ -273,10 +417,85 @@ public sealed partial class ItemGridViewModel : ObservableObject
         Rebuild();
     }
 
+    [RelayCommand]
+    private void SelectSellFilter(FilterChip chip)
+    {
+        SelectSellKey(chip.Key);
+        Rebuild();
+    }
+
+    private void SelectSellKey(string key)
+    {
+        _sellSelected = key;
+        foreach (var f in SellFilters) f.IsSelected = f.Key == key;
+    }
+
+    [RelayCommand]
+    private void OpenTile(TileViewModel? tile)
+    {
+        if (tile is null || !tile.Interactive) return;
+        if (SelectMode)
+        {
+            ToggleCheck(tile);
+            return;
+        }
+        TileOpened?.Invoke(this, tile);
+    }
+
+    [RelayCommand]
+    private void ToggleCheck(TileViewModel? tile)
+    {
+        if (tile is null || !tile.CanCheck) return;
+        tile.IsChecked = !tile.IsChecked;
+        if (tile.IsChecked) _checked.Add(tile.Item.AssetId);
+        else _checked.Remove(tile.Item.AssetId);
+        UpdateSelected();
+    }
+
+    [RelayCommand]
+    private void SelectAllShown()
+    {
+        foreach (var t in _shownTiles.Where(t => t.CanCheck))
+        {
+            t.IsChecked = true;
+            _checked.Add(t.Item.AssetId);
+        }
+        UpdateSelected();
+    }
+
+    [RelayCommand]
+    private void ClearSelection()
+    {
+        foreach (var t in _tiles) t.IsChecked = false;
+        _checked.Clear();
+        UpdateSelected();
+    }
+
+    [RelayCommand]
+    private void SellSelected()
+    {
+        var tiles = CheckedTiles;
+        if (tiles.Count > 0) SellSelectedRequested?.Invoke(this, tiles);
+    }
+
+    private void UpdateSelected()
+    {
+        var picked = _tiles.Where(t => t.IsChecked).ToList();
+        SelectedCount = picked.Count;
+        foreach (var t in _tiles) t.SelectMode = picked.Count > 0;
+        var worth = picked.Where(t => t.Quote is not null).ToList();
+        var currency = worth.FirstOrDefault()?.Quote?.Currency;
+        SelectedText = picked.Count == 0 ? ""
+            : (picked.Count == 1 ? "1 item selected" : $"{picked.Count} items selected")
+              + (worth.Count > 0 ? " · worth about " + Money.Format(worth.Sum(t => t.Price), currency) : "");
+        CheckableShown = _shownTiles.Count(t => t.CanCheck && !t.IsChecked);
+    }
+
     private void Rebuild()
     {
         IEnumerable<TileViewModel> q = _tiles;
         if (_selected != "all") q = q.Where(t => GroupKey(t.Item) == _selected);
+        if (SellEnabled && _sellSelected != "all") q = q.Where(t => SellKey(t) == _sellSelected);
         var s = Search.Trim();
         if (s.Length > 0) q = q.Where(t => t.Item.Name.Contains(s, StringComparison.OrdinalIgnoreCase) || t.Item.Type.Contains(s, StringComparison.OrdinalIgnoreCase));
         q = (Sort?.Value as string) switch
@@ -287,7 +506,9 @@ public sealed partial class ItemGridViewModel : ObservableObject
             _ => q.OrderByDescending(t => t.Price).ThenByDescending(t => t.Tier),
         };
         var list = q.ToList();
+        _shownTiles = list;
         Shown = list.Count;
         Rows = list.Chunk(_columns).Select(c => new TileRow(c)).ToList();
+        CheckableShown = _shownTiles.Count(t => t.CanCheck && !t.IsChecked);
     }
 }

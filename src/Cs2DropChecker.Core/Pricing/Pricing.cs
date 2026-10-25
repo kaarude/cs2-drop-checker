@@ -71,14 +71,54 @@ public static class Currencies
         new("AUD", "A$ ", 21, false),
     ];
 
+    /// <summary>Other Steam wallet currencies. The market always trades in the wallet currency, which may not be in <see cref="All"/>.</summary>
+    private static readonly IReadOnlyList<CurrencyInfo> WalletOnly =
+    [
+        new("RUB", " ₽", 5, true),
+        new("JPY", "¥ ", 8, false),
+        new("IDR", "Rp ", 10, false),
+        new("MYR", "RM", 11, false),
+        new("PHP", "P", 12, false),
+        new("SGD", "S$", 13, false),
+        new("THB", "฿", 14, false),
+        new("VND", "₫", 15, true),
+        new("KRW", "₩ ", 16, false),
+        new("TRY", " TL", 17, true),
+        new("UAH", "₴", 18, true),
+        new("MXN", "Mex$ ", 19, false),
+        new("NZD", "NZ$ ", 22, false),
+        new("CNY", "¥ ", 23, false),
+        new("INR", "₹ ", 24, false),
+        new("CLP", "CLP$ ", 25, false),
+        new("PEN", "S/.", 26, false),
+        new("COP", "COL$ ", 27, false),
+        new("ZAR", "R ", 28, false),
+        new("HKD", "HK$ ", 29, false),
+        new("TWD", "NT$ ", 30, false),
+        new("SAR", " SR", 31, true),
+        new("AED", " AED", 32, true),
+        new("ARS", "ARS$ ", 34, false),
+        new("ILS", "₪", 35, false),
+        new("KZT", "₸", 37, true),
+        new("KWD", " KD", 38, true),
+        new("QAR", " QR", 39, true),
+        new("CRC", "₡", 40, false),
+        new("UYU", "$U", 41, false),
+    ];
+
     public static CurrencyInfo Get(string? code) => All.FirstOrDefault(c => c.Code == code) ?? All[0];
 
     public static bool IsKnown(string? code) => All.Any(c => c.Code == code);
 
+    public static CurrencyInfo FromSteamCode(int steamCode) =>
+        All.FirstOrDefault(c => c.SteamCode == steamCode)
+        ?? WalletOnly.FirstOrDefault(c => c.SteamCode == steamCode)
+        ?? new CurrencyInfo($"#{steamCode}", "", steamCode, true);
+
     public static string Format(decimal value, string? code)
     {
         if (value < 0) return "-" + Format(-value, code);
-        var c = Get(code);
+        var c = code is null ? All[0] : All.FirstOrDefault(x => x.Code == code) ?? WalletOnly.FirstOrDefault(x => x.Code == code) ?? new CurrencyInfo(code, " " + code, 0, true);
         var n = value.ToString("#,##0.00", CultureInfo.InvariantCulture);
         return c.SymbolAfter ? n + c.Symbol : c.Symbol + n;
     }

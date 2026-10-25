@@ -84,10 +84,26 @@
         </Grid>
         <ListBox x:Name="Tiles" Grid.Row="1" Style="{StaticResource PlainList}" ItemsSource="{Binding Grid.Rows}" ItemTemplate="{StaticResource TileRow}" />
         <Grid Grid.Row="2" Margin="0,8,8,0">
-          <TextBlock Style="{StaticResource Note}" Text="Base prices ignore stickers, charms, float and Doppler phase · flagged items may be worth more" />
-          <TextBlock Style="{StaticResource Note}" HorizontalAlignment="Right">
-            <Run Text="Showing " /><Run Text="{Binding Grid.Shown, Mode=OneWay}" /><Run Text=" of " /><Run Text="{Binding Grid.Total, Mode=OneWay}" />
-          </TextBlock>
+          <Grid Visibility="{Binding Grid.SelectMode, Converter={StaticResource Vis}, ConverterParameter=!}">
+            <TextBlock Style="{StaticResource Note}" Text="Base prices ignore stickers, charms, float and Doppler phase · flagged items may be worth more" />
+            <TextBlock Style="{StaticResource Note}" HorizontalAlignment="Right">
+              <Run Text="Showing " /><Run Text="{Binding Grid.Shown, Mode=OneWay}" /><Run Text=" of " /><Run Text="{Binding Grid.Total, Mode=OneWay}" />
+            </TextBlock>
+          </Grid>
+          <!-- Bulk sell bar, shown once a tile is ticked -->
+          <Border Background="{StaticResource WarnBg}" BorderBrush="{StaticResource AccentLine}" BorderThickness="1" Padding="12,5,6,5"
+                  Visibility="{Binding Grid.SelectMode, Converter={StaticResource Vis}}">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Style="{StaticResource LinkButton}" Content="Select all shown" Command="{Binding Grid.SelectAllShownCommand}" Margin="0,0,16,0"
+                        VerticalAlignment="Center" Visibility="{Binding Grid.CheckableShown, Converter={StaticResource Vis}}" />
+                <Button Style="{StaticResource GhostButton}" Content="Clear" Command="{Binding Grid.ClearSelectionCommand}" Margin="0,0,8,0" />
+                <Button Style="{StaticResource PrimaryButton}" Content="Sell selected" Command="{Binding Grid.SellSelectedCommand}" Height="30" />
+              </StackPanel>
+              <c:TrackedText Text="{Binding Grid.SelectedText}" FontSize="11.5" FontWeight="SemiBold" Spacing="1" Foreground="{StaticResource Text}"
+                             VerticalAlignment="Center" Upper="False" />
+            </DockPanel>
+          </Border>
         </Grid>
       </Grid>
     </c:CutBorder>

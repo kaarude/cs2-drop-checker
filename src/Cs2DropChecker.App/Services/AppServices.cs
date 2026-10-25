@@ -41,6 +41,8 @@ public sealed class AppServices : IDisposable
         Session = new SteamSession(ui, Profiles, loggers.CreateLogger("Session"));
         WebTransport = new WebViewInventoryTransport(Session);
         Watcher = new WatcherService(this, loggers.CreateLogger("Watcher"));
+        Market = new MarketService(this, loggers.CreateLogger("Market"));
+        Updates = new UpdateService(this, loggers.CreateLogger("Updates"));
         Hotkeys = new HotkeyService(ui, loggers.CreateLogger("Hotkeys"));
     }
 
@@ -60,6 +62,8 @@ public sealed class AppServices : IDisposable
     public Cs2Monitor Cs2 { get; }
     public SteamSession Session { get; }
     public WatcherService Watcher { get; }
+    public MarketService Market { get; }
+    public UpdateService Updates { get; }
     public HotkeyService Hotkeys { get; }
     public Overlay.OverlayService? Overlay { get; set; }
 
@@ -84,6 +88,7 @@ public sealed class AppServices : IDisposable
     public void Dispose()
     {
         Watcher.Dispose();
+        Updates.Dispose();
         Hotkeys.Dispose();
         Cs2.Dispose();
     }

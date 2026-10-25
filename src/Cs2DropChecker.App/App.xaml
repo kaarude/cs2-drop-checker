@@ -7,6 +7,7 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Theme/Hud.xaml" />
         <ResourceDictionary Source="Theme/Templates.xaml" />
+        <ResourceDictionary Source="Theme/Market.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

@@ -21,6 +21,9 @@
     <DataTemplate DataType="{x:Type vm:InventoryViewModel}">
       <v:InventoryPage />
     </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:MarketViewModel}">
+      <v:MarketPage />
+    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:LookupViewModel}">
       <v:LookupPage />
     </DataTemplate>
@@ -104,9 +107,11 @@
         <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource LineSoft}" BorderThickness="0,0,1,0">
           <DockPanel Margin="0,10,0,14">
             <StackPanel DockPanel.Dock="Bottom" Margin="14,0,12,0">
+              <Button Style="{StaticResource UpdateButton}" Content="{Binding UpdateText}" Tag="{Binding UpdateProgress}" ToolTip="{Binding UpdateTip}"
+                      AutomationProperties.Name="Update" Command="{Binding InstallUpdateCommand}" Margin="0,0,0,10"
+                      IsEnabled="{Binding UpdateBusy, Converter={StaticResource EqBool}, ConverterParameter=False}"
+                      Visibility="{Binding UpdateVisible, Converter={StaticResource Vis}}" />
               <c:TrackedText Style="{StaticResource Foot}" Text="{Binding FootId}" Upper="False" />
-              <c:TrackedText Style="{StaticResource Foot}" Text="{Binding FootPrices}" />
-              <c:TrackedText Style="{StaticResource Foot}" Text="{Binding FootStartup}" />
             </StackPanel>
             <StackPanel Margin="6,0">
               <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Overview" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Overview}">
@@ -132,6 +137,12 @@
                 <StackPanel Orientation="Horizontal">
                   <Path Style="{StaticResource NavIcon}" Data="{StaticResource IcoInventory}" />
                   <c:TrackedText Style="{StaticResource NavText}" Text="Inventory" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Market" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Market}">
+                <StackPanel Orientation="Horizontal">
+                  <Path Style="{StaticResource NavIcon}" Data="{StaticResource IcoMarket}" />
+                  <c:TrackedText Style="{StaticResource NavText}" Text="Market" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Style="{StaticResource NavItem}" AutomationProperties.Name="Lookup" IsChecked="{Binding Page, Converter={StaticResource EqBool}, ConverterParameter=Lookup}">

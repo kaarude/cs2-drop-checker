@@ -142,6 +142,8 @@ public static partial class InventoryParser
 {
     [GeneratedRegex(@"<img", RegexOptions.IgnoreCase)] private static partial Regex ImgTag();
     [GeneratedRegex(@"\d+")] private static partial Regex Digits();
+    [GeneratedRegex(@"([A-Z][a-z]{2})\s+(\d{1,2}),\s+(\d{4})\s+\((\d{1,2}):(\d{2}):(\d{2})\)\s*GMT")] private static partial Regex SteamDate();
+    [GeneratedRegex(@"tradable|marketable|protect", RegexOptions.IgnoreCase)] private static partial Regex RestrictionLine();
 
     public static InventoryPage Parse(string json)
     {
@@ -256,7 +258,40 @@ public static partial class InventoryParser
             Tradable = Int(d, "tradable") == 1,
             Marketable = Int(d, "marketable") == 1,
             StorageCount = storage,
+            ProtectedUntil = ProtectedUntil(d),
         };
+    }
+
+    /// <summary>
+    /// Owner views carry lines such as "Tradable/Marketable After Jul 23, 2025 (7:00:00) GMT" and a cache_expiration
+    /// timestamp; public views carry neither.
+    /// </summary>
+    internal static DateTimeOffset? ProtectedUntil(JsonElement d)
+    {
+        foreach (var (array, anyLine) in new[] { ("owner_descriptions", true), ("descriptions", false) })
+        {
+            if (!d.TryGetProperty(array, out var lines) || lines.ValueKind != JsonValueKind.Array) continue;
+            foreach (var line in lines.EnumerateArray())
+            {
+                var value = Str(line, "value");
+                if (string.IsNullOrEmpty(value) || (!anyLine && !RestrictionLine().IsMatch(value))) continue;
+                if (ParseSteamDate(value) is { } at) return at;
+            }
+        }
+        if (Str(d, "cache_expiration") is { Length: > 0 } exp
+            && DateTimeOffset.TryParse(exp, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var ce))
+            return ce;
+        return null;
+    }
+
+    internal static DateTimeOffset? ParseSteamDate(string text)
+    {
+        var m = SteamDate().Match(text);
+        if (!m.Success) return null;
+        var s = $"{m.Groups[1].Value} {m.Groups[2].Value} {m.Groups[3].Value} {m.Groups[4].Value}:{m.Groups[5].Value}:{m.Groups[6].Value}";
+        return DateTime.TryParseExact(s, "MMM d yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var dt)
+            ? new DateTimeOffset(dt, TimeSpan.Zero)
+            : null;
     }
 
     internal static string? Str(JsonElement e, string name) =>

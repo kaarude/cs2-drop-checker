@@ -54,7 +54,7 @@
 
       <Border Grid.Row="3" Background="{StaticResource Panel}" BorderBrush="{StaticResource LineSoft}" BorderThickness="0,1,0,0" Padding="14,9">
         <TextBlock Style="{StaticResource Note}" FontSize="11"
-                   Text="This is Steam's own login page. The app never sees your password or login cookie, and it only reads your inventory. Close this window to cancel." />
+                   Text="This is Steam's own login page. The app never sees your password or login cookie. It reads your inventory and market prices, and only lists or removes items on the market when you ask. Close this window to cancel." />
       </Border>
     </Grid>
   </Border>

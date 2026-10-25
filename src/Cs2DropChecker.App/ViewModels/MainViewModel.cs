@@ -7,7 +7,7 @@ using Cs2DropChecker.Core.Util;
 
 namespace Cs2DropChecker.App.ViewModels;
 
-public enum Page { Overview, Drops, Inventory, Lookup, Settings }
+public enum Page { Overview, Drops, Inventory, Market, Lookup, Settings }
 
 /// <summary>Shell state: navigation, title-bar status, sidebar footer and status bar.</summary>
 public sealed partial class MainViewModel : ObservableObject
@@ -23,6 +23,7 @@ public sealed partial class MainViewModel : ObservableObject
         Overview = new OverviewViewModel(s);
         Drops = new DropsViewModel(s);
         Inventory = new InventoryViewModel(s);
+        Market = new MarketViewModel(s);
         Lookup = new LookupViewModel(s);
         Settings = new SettingsViewModel(s);
         _current = Overview;
@@ -57,6 +58,7 @@ public sealed partial class MainViewModel : ObservableObject
             UpdateBadge();
         };
         s.Session.Changed += (_, _) => Settings.UpdateSession();
+        s.Updates.Changed += (_, _) => UpdateUpdate();
 
         _tick = new DispatcherTimer(DispatcherPriority.Background, s.Ui) { Interval = TimeSpan.FromSeconds(1) };
         _tick.Tick += (_, _) => Tick();
@@ -64,6 +66,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         UpdateStatus();
         UpdateFooter();
+        UpdateUpdate();
         UpdateBadge();
         Overview.Reload();
         Inventory.Refresh(pricesOnly: false);
@@ -72,6 +75,7 @@ public sealed partial class MainViewModel : ObservableObject
     public OverviewViewModel Overview { get; }
     public DropsViewModel Drops { get; }
     public InventoryViewModel Inventory { get; }
+    public MarketViewModel Market { get; }
     public LookupViewModel Lookup { get; }
     public SettingsViewModel Settings { get; }
 
@@ -82,8 +86,11 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _statusTip = "";
     [ObservableProperty] private int _newDrops;
     [ObservableProperty] private string _footId = "";
-    [ObservableProperty] private string _footPrices = "";
-    [ObservableProperty] private string _footStartup = "";
+    [ObservableProperty] private bool _updateVisible;
+    [ObservableProperty] private string _updateText = "";
+    [ObservableProperty] private string _updateTip = "";
+    [ObservableProperty] private double _updateProgress;
+    [ObservableProperty] private bool _updateBusy;
     [ObservableProperty] private string _lastPollText = "";
     [ObservableProperty] private string _pricesText = "";
     [ObservableProperty] private string _refreshKey = "";
@@ -92,10 +99,12 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (oldValue == Page.Lookup && newValue != Page.Lookup) Lookup.Clear();
         if (oldValue == Page.Settings && newValue != Page.Settings) Settings.CancelRecording();
+        if (oldValue == Page.Market && newValue != Page.Market) Market.OnHidden();
         Current = newValue switch
         {
             Page.Drops => Drops,
             Page.Inventory => Inventory,
+            Page.Market => Market,
             Page.Lookup => Lookup,
             Page.Settings => Settings,
             _ => Overview,
@@ -113,13 +122,20 @@ public sealed partial class MainViewModel : ObservableObject
             case Page.Inventory:
                 Inventory.Refresh(pricesOnly: true);
                 break;
+            case Page.Market:
+                Market.OnShown();
+                break;
             case Page.Overview:
                 Overview.RefreshValue();
                 break;
         }
     }
 
+    [RelayCommand]
     public void Navigate(Page page) => Page = page;
+
+    [RelayCommand]
+    private void InstallUpdate() => _ = _s.Updates.InstallAsync();
 
     [RelayCommand]
     private void RefreshNow() => _s.Watcher.PollNow();
@@ -155,6 +171,7 @@ public sealed partial class MainViewModel : ObservableObject
         UpdateStatusBar();
         if (Page == Page.Inventory) Inventory.Tick();
         if (Page == Page.Lookup) Lookup.Tick();
+        if (Page == Page.Market && _ticks % 10 == 0) Market.Tick();
         if (_ticks % 60 == 0) Overview.RefreshWhen();
     }
 
@@ -216,9 +233,25 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var s = _s.Settings;
         FootId = s.SteamId64 == 0 ? "No profile yet" : "SteamID64 " + SteamIdMask.Mask(s.SteamId64);
-        var names = _s.Prices.Ordered().Select(p => p.Id == PriceSourceIds.Skinport ? "Skinport" : "Steam").Distinct().ToList();
-        FootPrices = s.Currency + (names.Count > 0 ? " · " + string.Join(" → ", names) : "");
-        FootStartup = s.StartWithWindows ? "Starts with Windows" : "Manual start";
         RefreshKey = s.Hotkeys.RefreshNow;
+    }
+
+    private void UpdateUpdate()
+    {
+        var u = _s.Updates;
+        UpdateVisible = u.Available is not null;
+        if (u.Available is not { } info) return;
+        UpdateBusy = u.Stage is UpdateStage.Downloading or UpdateStage.Installing;
+        UpdateProgress = u.Stage == UpdateStage.Downloading ? u.Progress : 0;
+        UpdateText = u.Stage switch
+        {
+            UpdateStage.Downloading => $"Downloading {(int)(u.Progress * 100)}%",
+            UpdateStage.Installing => "Restarting…",
+            UpdateStage.Failed => "Retry update",
+            _ => "Update to " + info.VersionText,
+        };
+        UpdateTip = u.Stage == UpdateStage.Failed ? u.Error
+            : UpdateService.CanInstallInPlace ? $"Version {info.VersionText} is out. Downloads it from GitHub, swaps it in and restarts the app."
+            : $"Version {info.VersionText} is out. Opens the release page on GitHub.";
     }
 }

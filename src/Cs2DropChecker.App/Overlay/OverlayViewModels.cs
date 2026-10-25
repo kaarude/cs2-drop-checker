@@ -15,15 +15,16 @@ public sealed partial class CardViewModel : ObservableObject
     private static readonly Brush GoldBorder = Frozen(new LinearGradientBrush(
         Color.FromRgb(0xf5, 0xcf, 0x6a), Color.FromRgb(0xe4, 0xae, 0x39), 90));
 
-    public CardViewModel(DropRecord d, bool test = false)
+    public CardViewModel(DropRecord d, bool test = false, bool sellable = false)
     {
         Drop = d;
         var i = d.Item;
         DropId = d.Id;
         IsTest = test;
+        Sellable = sellable;
         Gold = i.IsStar;
         RarityHex = i.RarityHex;
-        Tag = (Gold ? "★ " : "") + (test ? "Test card" : ArrivalKindText.CardTag(d.Kind));
+        Tag = (Gold ? "★ " : "") + (test ? "Test card" : sellable ? "Now sellable" : ArrivalKindText.CardTag(d.Kind));
         IconUrl = i.IconUrl;
         RarityLine = i.RarityLine;
         Weapon = i.WeaponTitle;
@@ -31,7 +32,12 @@ public sealed partial class CardViewModel : ObservableObject
         WearChip = i.HasWear || i.Float.HasValue ? ItemText.WearChip(i) : i.IsContainer || !i.HasWear ? "No wear" : "";
         StatTrak = i.IsStatTrak;
         Souvenir = i.IsSouvenir;
-        if (ItemText.ValueWarning(i) is { } warn)
+        if (sellable)
+        {
+            Warn = "Trade protection over · ready to list";
+            WarnGood = true;
+        }
+        else if (ItemText.ValueWarning(i) is { } warn)
         {
             Warn = warn;
         }
@@ -49,7 +55,7 @@ public sealed partial class CardViewModel : ObservableObject
         RarityBrush = BrushCache.FromHex(RarityHex);
         BorderBrush = Gold ? GoldBorder : Frozen(new LinearGradientBrush(c, Color.FromArgb(0x90, c.R, c.G, c.B), 90));
         TintBrush = BrushCache.Tint(RarityHex, Gold ? (byte)0x80 : (byte)0x6a);
-        TagBrush = BrushCache.FromHex(Gold ? "e4ae39" : "de9b35");
+        TagBrush = BrushCache.FromHex(sellable ? "8fd19a" : Gold ? "e4ae39" : "de9b35");
         if (d.PriceAtDrop is { } p)
         {
             Price = Money.Format(p, d.Currency);
@@ -84,6 +90,9 @@ public sealed partial class CardViewModel : ObservableObject
     public string? Warn { get; }
     public string WarnUpper => Warn?.ToUpperInvariant() ?? "";
     public bool WarnLate { get; }
+    public bool WarnGood { get; }
+    /// <summary>A reminder that an item left trade protection, not an arrival.</summary>
+    public bool Sellable { get; }
     public Brush RarityBrush { get; }
     public Brush BorderBrush { get; }
     public Brush TintBrush { get; }
@@ -101,8 +110,8 @@ public sealed partial class CardViewModel : ObservableObject
         Pending = false;
         if (q is null)
         {
-            Price = "No price";
-            Source = "Not on the market";
+            Price = Sellable ? "—" : "No price";
+            Source = Sellable ? "" : "Not on the market";
             return;
         }
         SortValue = q.Price;

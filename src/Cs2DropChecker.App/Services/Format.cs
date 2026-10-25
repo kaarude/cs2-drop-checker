@@ -40,6 +40,15 @@ public static class When
         return $"{(int)span.TotalHours} h {span.Minutes} min";
     }
 
+    /// <summary>Compact time left: "6d 23h", "5h 12m", "12m".</summary>
+    public static string Left(TimeSpan span)
+    {
+        if (span <= TimeSpan.Zero) return "soon";
+        if (span.TotalDays >= 1) return $"{(int)span.TotalDays}d {span.Hours}h";
+        if (span.TotalHours >= 1) return $"{(int)span.TotalHours}h {span.Minutes}m";
+        return $"{Math.Max(1, (int)Math.Ceiling(span.TotalMinutes))}m";
+    }
+
     public static string Ago(DateTimeOffset? at)
     {
         if (at is null) return "never";

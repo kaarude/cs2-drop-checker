@@ -7,7 +7,7 @@ namespace Cs2DropChecker.Core.Util;
 public static class HttpFactory
 {
     // A browser-like agent without a Steam session gets HTTP 429 from /inventory almost immediately; a plain tool agent does not.
-    public const string UserAgent = "cs2-drop-checker/0.1.0 (+https://github.com/kaarude/cs2-drop-checker)";
+    public static readonly string UserAgent = $"cs2-drop-checker/{Updates.AppVersion.Text} (+https://github.com/kaarude/cs2-drop-checker)";
 
     public static HttpClient Create(DecompressionMethods decompression = DecompressionMethods.All, TimeSpan? timeout = null)
     {

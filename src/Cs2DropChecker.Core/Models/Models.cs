@@ -30,6 +30,9 @@ public sealed record InventoryItem
     public bool Marketable { get; init; }
     public int? StorageCount { get; init; }
 
+    /// <summary>When Steam's trade protection or market cooldown ends, if the owner view of the inventory says so.</summary>
+    public DateTimeOffset? ProtectedUntil { get; init; }
+
     [JsonIgnore] public bool IsStatTrak => QualityTag.Contains("strange", StringComparison.Ordinal);
     [JsonIgnore] public bool IsSouvenir => QualityTag == "tournament";
     [JsonIgnore] public bool IsStar => Name.StartsWith('★');

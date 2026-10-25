@@ -12,7 +12,8 @@ public sealed record DiffResult(IReadOnlyList<ClassifiedItem> Added, IReadOnlyLi
 /// </summary>
 public static class DropClassifier
 {
-    public static DiffResult Classify(InventorySnapshot previous, InventorySnapshot next, bool cs2Active)
+    /// <param name="marketAssets">Assets on the market. When they vanish they were sold, not consumed or moved.</param>
+    public static DiffResult Classify(InventorySnapshot previous, InventorySnapshot next, bool cs2Active, IReadOnlySet<string>? marketAssets = null)
     {
         var prevIds = previous.Items.Select(i => i.AssetId).ToHashSet(StringComparer.Ordinal);
         var nextIds = next.Items.Select(i => i.AssetId).ToHashSet(StringComparer.Ordinal);
@@ -20,7 +21,7 @@ public static class DropClassifier
         // When the view changes between signed-in and public, other contexts appear or vanish wholesale,
         // so only context 2 is compared.
         var modeSwitch = previous.SignedIn != next.SignedIn;
-        var removedAll = previous.Items.Where(i => !nextIds.Contains(i.AssetId)).ToList();
+        var removedAll = previous.Items.Where(i => !nextIds.Contains(i.AssetId) && marketAssets?.Contains(i.AssetId) != true).ToList();
         var removed = modeSwitch ? removedAll.Where(i => i.ContextId == "2").ToList() : removedAll;
         var open = next.Items.Where(i => !prevIds.Contains(i.AssetId) && (!modeSwitch || i.ContextId == "2")).ToList();
 

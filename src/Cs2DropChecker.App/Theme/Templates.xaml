@@ -119,8 +119,49 @@
   </DataTemplate>
 
   <!-- Inventory tile -->
+  <Geometry x:Key="IcoLock">M3,7 V5 A4,4 0 0 1 11,5 V7 M1.5,7 H12.5 V14 H1.5 Z</Geometry>
+  <Geometry x:Key="IcoClock">M8,1.2 A6.8,6.8 0 1 1 7.99,1.2 Z M8,4 V8 L10.8,9.8</Geometry>
+  <Style x:Key="TileButton" TargetType="Button">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <ContentPresenter />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="TileCheck" TargetType="Button">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="ToolTip" Value="Select to sell several at once" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Background="Transparent" Padding="3">
+            <Border x:Name="box" Width="16" Height="16" Background="#e60b1119" BorderBrush="{StaticResource Text2}" BorderThickness="1">
+              <Path x:Name="mark" Data="{StaticResource IcoCheck}" Stroke="{StaticResource Ink}" StrokeThickness="2" Stretch="Uniform" Margin="3" Visibility="Collapsed" />
+            </Border>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="box" Property="BorderBrush" Value="{StaticResource Accent}" />
+            </Trigger>
+            <DataTrigger Binding="{Binding IsChecked}" Value="True">
+              <Setter TargetName="box" Property="Background" Value="{StaticResource Accent}" />
+              <Setter TargetName="box" Property="BorderBrush" Value="{StaticResource Accent}" />
+              <Setter TargetName="mark" Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <DataTemplate x:Key="Tile" DataType="{x:Type vm:TileViewModel}">
-    <c:CutBorder x:Name="tile" Width="120" Height="174" Margin="0,0,8,8" Cut="10" Corners="TopRight" BorderThickness="1"
+    <Button x:Name="btn" Style="{StaticResource TileButton}" Margin="0,0,8,8"
+            Command="{Binding DataContext.Grid.OpenTileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+    <c:CutBorder x:Name="tile" Width="120" Height="174" Cut="10" Corners="TopRight" BorderThickness="1"
                  BorderBrush="{Binding RarityHex, Converter={StaticResource HexBrush}}" Background="{StaticResource CardBg}">
       <c:CutBorder.ToolTip>
         <StackPanel>
@@ -129,6 +170,8 @@
           <TextBlock Foreground="{StaticResource Gold}" FontSize="11.5">
             <Run Text="{Binding PriceText, Mode=OneWay}" /><Run Text=" · " Foreground="{StaticResource Dim}" /><Run Text="{Binding SourceText, Mode=OneWay}" Foreground="{StaticResource Dim}" />
           </TextBlock>
+          <TextBlock Text="{Binding SellTip}" Foreground="{StaticResource BlueText}" FontSize="11.5" Margin="0,3,0,0"
+                     Visibility="{Binding SellTip, Converter={StaticResource Vis}}" />
         </StackPanel>
       </c:CutBorder.ToolTip>
       <Grid>
@@ -138,6 +181,14 @@
         <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,9,0" Padding="4,0" BorderThickness="1"
                 BorderBrush="#99e6c46e" Background="#cc0b1119" Visibility="{Binding Badge, Converter={StaticResource Vis}}">
           <c:TrackedText Text="{Binding Badge}" FontSize="8.5" FontWeight="SemiBold" Spacing="0.6" Foreground="{StaticResource Warn}" Upper="False" />
+        </Border>
+        <Border x:Name="sell" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6,6,0,0" Padding="4,0,5,0" BorderThickness="1"
+                BorderBrush="#808fb8ff" Background="#cc0b1119" Visibility="{Binding SellBadge, Converter={StaticResource Vis}}">
+          <StackPanel Orientation="Horizontal">
+            <Path x:Name="sellIco" Data="{StaticResource IcoLock}" Width="7" Height="8" Stretch="Uniform" Stroke="{StaticResource Late}" StrokeThickness="1.1"
+                  Margin="0,0,4,0" VerticalAlignment="Center" />
+            <c:TrackedText x:Name="sellText" Text="{Binding SellBadge}" FontSize="8.5" FontWeight="SemiBold" Spacing="0.6" Foreground="{StaticResource Late}" Upper="False" />
+          </StackPanel>
         </Border>
         <StackPanel VerticalAlignment="Bottom" Margin="8,0,8,9">
           <c:TrackedText Text="{Binding RarityText}" FontSize="8.5" FontWeight="Bold" Spacing="1" Foreground="{Binding RarityHex, Converter={StaticResource HexBrush}}" />
@@ -150,12 +201,55 @@
           </Grid>
         </StackPanel>
         <Rectangle Height="3" VerticalAlignment="Bottom" Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" />
+        <Button x:Name="check" Style="{StaticResource TileCheck}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="2,2,0,0" Visibility="Collapsed"
+                Command="{Binding DataContext.Grid.ToggleCheckCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
       </Grid>
     </c:CutBorder>
+    </Button>
     <DataTemplate.Triggers>
       <Trigger SourceName="tile" Property="IsMouseOver" Value="True">
         <Setter TargetName="tile" Property="BorderThickness" Value="2" />
       </Trigger>
+      <DataTrigger Binding="{Binding Interactive}" Value="True">
+        <Setter TargetName="btn" Property="Cursor" Value="Hand" />
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Binding="{Binding CanCheck}" Value="True" />
+          <Condition Binding="{Binding IsMouseOver, ElementName=tile}" Value="True" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="check" Property="Visibility" Value="Visible" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Binding="{Binding CanCheck}" Value="True" />
+          <Condition Binding="{Binding SelectMode}" Value="True" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="check" Property="Visibility" Value="Visible" />
+      </MultiDataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Binding="{Binding CanCheck}" Value="False" />
+          <Condition Binding="{Binding SelectMode}" Value="True" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="tile" Property="Opacity" Value="0.38" />
+      </MultiDataTrigger>
+      <DataTrigger Binding="{Binding IsChecked}" Value="True">
+        <Setter TargetName="tile" Property="BorderBrush" Value="{StaticResource Accent}" />
+        <Setter TargetName="tile" Property="BorderThickness" Value="2" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding SellKind}" Value="listed">
+        <Setter TargetName="sell" Property="BorderBrush" Value="#808fd19a" />
+        <Setter TargetName="sellIco" Property="Data" Value="{StaticResource IcoCheck}" />
+        <Setter TargetName="sellIco" Property="Stroke" Value="{StaticResource Up}" />
+        <Setter TargetName="sellText" Property="Foreground" Value="{StaticResource Up}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding SellKind}" Value="pending">
+        <Setter TargetName="sell" Property="BorderBrush" Value="#99e6c46e" />
+        <Setter TargetName="sellIco" Property="Data" Value="{StaticResource IcoClock}" />
+        <Setter TargetName="sellIco" Property="Stroke" Value="{StaticResource Warn}" />
+        <Setter TargetName="sellText" Property="Foreground" Value="{StaticResource Warn}" />
+      </DataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
 

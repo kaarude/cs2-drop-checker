@@ -9,8 +9,24 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <Grid Margin="0,0,0,14">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
       <c:TrackedText Style="{StaticResource H1}" Text="Inventory" VerticalAlignment="Center" />
-      <Button Style="{StaticResource PrimaryButton}" Content="Refresh now" HorizontalAlignment="Right"
+      <!-- Sell filter: only when the signed-in inventory can be sold from -->
+      <ItemsControl Grid.Column="1" ItemsSource="{Binding Grid.SellFilters}" ItemsPanel="{StaticResource Horizontal}" Focusable="False"
+                    VerticalAlignment="Center" Margin="12,0,14,0" Visibility="{Binding CanSell, Converter={StaticResource Vis}}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <RadioButton Style="{StaticResource Seg}" Content="{Binding Display}" IsChecked="{Binding IsSelected, Mode=TwoWay}" Height="28" Margin="0,0,-1,0"
+                         Command="{Binding DataContext.Grid.SelectSellFilterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                         CommandParameter="{Binding}" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Content="Refresh now" HorizontalAlignment="Right"
               Tag="{Binding DataContext.RefreshKey, RelativeSource={RelativeSource AncestorType=Window}}"
               Command="{Binding DataContext.RefreshNowCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
     </Grid>

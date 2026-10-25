@@ -33,6 +33,7 @@ public sealed class OverlayService : IDisposable
         _frame.Tick += (_, _) => OnFrame();
         s.Watcher.DropsAdded += OnDropsAdded;
         s.Watcher.DropPriced += OnDropPriced;
+        s.Watcher.NowSellable += OnNowSellable;
         s.Watcher.InventoryChanged += OnInventoryChanged;
         s.SettingsChanged += OnSettingsChanged;
     }
@@ -49,6 +50,34 @@ public sealed class OverlayService : IDisposable
         foreach (var d in e.Drops.OrderByDescending(d => d.Item.IsStar))
             _queue.AddLast(new CardViewModel(d));
         _log.LogInformation("{Count} card(s) queued", e.Drops.Count);
+        UpdateQueue();
+        Pump();
+    }
+
+    /// <summary>Most valuable first, capped so a batch of estimated expiries can't flood the queue.</summary>
+    private const int MaxSellableCards = 3;
+
+    private void OnNowSellable(object? sender, SellableEventArgs e)
+    {
+        var o = _s.Settings.Overlay;
+        if (!o.Enabled && !o.QueueWhileOff) return;
+        var priced = e.Items.Select(i => (Item: i, Quote: _s.Prices.GetCached(i.MarketHashName)))
+            .OrderByDescending(x => x.Quote?.Price ?? 0).Take(MaxSellableCards).ToList();
+        foreach (var (item, quote) in priced)
+        {
+            var record = new DropRecord
+            {
+                Id = -2,
+                SteamId = _s.Settings.SteamId64,
+                SeenAt = DateTimeOffset.UtcNow,
+                Kind = ArrivalKind.NewItem,
+                Item = item,
+            };
+            var card = new CardViewModel(record, sellable: true);
+            card.SetQuote(quote);
+            _queue.AddLast(card);
+        }
+        _log.LogInformation("{Count} item(s) left trade protection, {Shown} card(s) queued", e.Items.Count, priced.Count);
         UpdateQueue();
         Pump();
     }

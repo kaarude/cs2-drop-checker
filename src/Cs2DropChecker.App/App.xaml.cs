@@ -41,6 +41,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         var minimized = e.Args.Any(a => string.Equals(a, "--minimized", StringComparison.OrdinalIgnoreCase));
+        UpdateService.FinishPreviousUpdate(e.Args);
 
         _single = new SingleInstance();
         if (!_single.IsFirst)
@@ -83,6 +84,8 @@ public partial class App : Application
         _s.Overlay = new OverlayService(_s, _loggers.CreateLogger("Overlay"));
         _s.SettingsChanged += OnSettingsChanged;
         StartupRegistration.Apply(_s.Settings.StartWithWindows && _s.Settings.FirstRunDone);
+        _s.Market.LoadSaved();
+        _s.Updates.Start();
 
         _vm = new MainViewModel(_s);
         CreateTray();
@@ -200,6 +203,7 @@ public partial class App : Application
         if (o.SteamId != n.SteamId)
         {
             _log!.LogInformation("Watched account changed");
+            s.Market.Reset();
             s.Watcher.Reset(accountChanged: true);
         }
         if (o.Currency != n.Currency)

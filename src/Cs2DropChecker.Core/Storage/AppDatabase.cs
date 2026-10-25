@@ -8,7 +8,7 @@ namespace Cs2DropChecker.Core.Storage;
 
 public sealed record ValuePoint(DateTimeOffset At, decimal Total, string Currency, int PricedCount, int ItemCount);
 
-public sealed class AppDatabase
+public sealed partial class AppDatabase
 {
     private const int SchemaVersion = 1;
     private readonly string _connectionString;
@@ -84,6 +84,42 @@ public sealed class AppDatabase
                     status TEXT NOT NULL,
                     items INTEGER NOT NULL,
                     message TEXT);
+                CREATE TABLE IF NOT EXISTS market_listing(
+                    listing_id TEXT PRIMARY KEY,
+                    steam_id TEXT NOT NULL,
+                    asset_id TEXT NOT NULL,
+                    market_hash_name TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    buyer_cents INTEGER NOT NULL,
+                    receive_cents INTEGER NOT NULL,
+                    currency TEXT NOT NULL,
+                    first_seen INTEGER NOT NULL,
+                    state TEXT NOT NULL,
+                    gone_at INTEGER,
+                    item_json TEXT);
+                CREATE INDEX IF NOT EXISTS ix_listing_sid ON market_listing(steam_id);
+                CREATE TABLE IF NOT EXISTS market_sale(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    steam_id TEXT NOT NULL,
+                    listing_id TEXT NOT NULL,
+                    asset_id TEXT NOT NULL,
+                    market_hash_name TEXT NOT NULL,
+                    sold_at INTEGER NOT NULL,
+                    listed_at INTEGER NOT NULL,
+                    buyer_cents INTEGER NOT NULL,
+                    receive_cents INTEGER NOT NULL,
+                    currency TEXT NOT NULL,
+                    arrival_price REAL,
+                    arrival_currency TEXT,
+                    arrival_kind TEXT,
+                    item_json TEXT NOT NULL);
+                CREATE UNIQUE INDEX IF NOT EXISTS ux_sale_listing ON market_sale(listing_id);
+                CREATE INDEX IF NOT EXISTS ix_sale_sid ON market_sale(steam_id, sold_at);
+                CREATE TABLE IF NOT EXISTS asset_first_seen(
+                    steam_id TEXT NOT NULL,
+                    asset_id TEXT NOT NULL,
+                    first_seen INTEGER NOT NULL,
+                    PRIMARY KEY(steam_id, asset_id));
                 """;
             cmd.ExecuteNonQuery();
         }

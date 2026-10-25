@@ -119,7 +119,40 @@ public sealed partial class SteamSession(Dispatcher ui, SteamProfileClient profi
         }
     }
 
-    public async Task<BridgeResponse> FetchAsync(string pathAndQuery, CancellationToken ct)
+    public Task<BridgeResponse> FetchAsync(string pathAndQuery, CancellationToken ct)
+    {
+        var script = $$"""
+            const r = await fetch({{JsonSerializer.Serialize(pathAndQuery)}}, { credentials: 'include', cache: 'no-store' });
+            """;
+        return RunAsync(script, ct);
+    }
+
+    /// <summary>
+    /// Posts a form the way Steam's own pages do: same origin, the sessionid cookie copied into the form, and the
+    /// referrer Steam checks for market actions. <paramref name="sessionFallback"/> comes from g_sessionID on a page
+    /// and is used only if the cookie is missing.
+    /// </summary>
+    public Task<BridgeResponse> PostFormAsync(string path, IReadOnlyList<KeyValuePair<string, string>> form, string referrer, string? sessionFallback, CancellationToken ct)
+    {
+        var fields = form.Select(kv => new[] { kv.Key, kv.Value }).ToArray();
+        var script = $$"""
+            let sid = (document.cookie.match(/(?:^|;\s*)sessionid=([^;]+)/) || [])[1] || {{JsonSerializer.Serialize(sessionFallback ?? "")}};
+            if (!document.cookie.match(/(?:^|;\s*)sessionid=/) && sid) document.cookie = 'sessionid=' + sid + '; path=/; secure; samesite=none';
+            if (!sid) throw new Error('no Steam session id');
+            const form = new URLSearchParams();
+            form.set('sessionid', decodeURIComponent(sid));
+            for (const [k, v] of {{JsonSerializer.Serialize(fields)}}) form.set(k, v);
+            const r = await fetch({{JsonSerializer.Serialize(path)}}, {
+              method: 'POST', credentials: 'include', cache: 'no-store', body: form,
+              referrer: {{JsonSerializer.Serialize(referrer)}}, referrerPolicy: 'unsafe-url',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            """;
+        return RunAsync(script, ct);
+    }
+
+    /// <summary>Runs a fetch snippet that defines <c>r</c> inside the bridge page and returns its status, final URL and body.</summary>
+    private async Task<BridgeResponse> RunAsync(string fetchSnippet, CancellationToken ct)
     {
         var id = Guid.NewGuid().ToString("N");
         try
@@ -131,7 +164,7 @@ public sealed partial class SteamSession(Dispatcher ui, SteamProfileClient profi
                 (async () => {
                   const id = {{JsonSerializer.Serialize(id)}};
                   try {
-                    const r = await fetch({{JsonSerializer.Serialize(pathAndQuery)}}, { credentials: 'include', cache: 'no-store' });
+                    {{fetchSnippet}}
                     const body = await r.text();
                     chrome.webview.postMessage(JSON.stringify({ id, status: r.status, url: r.url, body }));
                   } catch (e) {

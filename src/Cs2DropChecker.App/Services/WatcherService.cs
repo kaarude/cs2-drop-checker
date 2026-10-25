@@ -1,4 +1,5 @@
 using Cs2DropChecker.Core.Detection;
+using Cs2DropChecker.Core.Market;
 using Cs2DropChecker.Core.Models;
 using Cs2DropChecker.Core.Pricing;
 using Cs2DropChecker.Core.Settings;
@@ -13,6 +14,9 @@ public enum WatchState { NotSetUp, Starting, Checking, Watching, WaitingForCs2, 
 public sealed record DropsAddedEventArgs(IReadOnlyList<DropRecord> Drops, bool ShowCards);
 
 public sealed record DropPricedEventArgs(long DropId, PriceQuote? Quote);
+
+/// <summary>Items whose trade protection ended since the previous check.</summary>
+public sealed record SellableEventArgs(IReadOnlyList<InventoryItem> Items);
 
 /// <summary>
 /// Polls the watched inventory, records what arrived and why, and keeps the inventory value current.
@@ -56,6 +60,7 @@ public sealed class WatcherService : IDisposable
     public event EventHandler? InventoryChanged;
     public event EventHandler<DropsAddedEventArgs>? DropsAdded;
     public event EventHandler<DropPricedEventArgs>? DropPriced;
+    public event EventHandler<SellableEventArgs>? NowSellable;
     public event EventHandler? SessionExpired;
 
     public void Start()
@@ -312,10 +317,11 @@ public sealed class WatcherService : IDisposable
 
         var added = new List<DropRecord>();
         var showCards = false;
+        List<InventoryItem> sellable = [];
         if (prev is not null)
         {
             var cs2Active = _s.Cs2.IsRunning || (_s.Cs2.LastSeenRunning is { } seen && seen >= prev.TakenAt);
-            var diff = DropClassifier.Classify(prev, snap, cs2Active);
+            var diff = DropClassifier.Classify(prev, snap, cs2Active, _s.Market.MarketAssets());
             var gap = snap.TakenAt - prev.TakenAt;
             showCards = gap <= TimeSpan.FromMinutes(Math.Max(30, s.PollIntervalMinutes * 3));
             var recordable = diff.Added.Where(a => ArrivalKindText.ShowsCard(a.Kind)).ToList();
@@ -343,6 +349,11 @@ public sealed class WatcherService : IDisposable
             if (diff.Added.Count > 0)
                 _log.LogInformation("Diff: {Added} added ({Recorded} recorded), {Removed} removed, cards {Show}",
                     diff.Added.Count, added.Count, diff.Removed.Count, showCards);
+            if (showCards)
+            {
+                sellable = SellRules.NewlySellable(prev, snap);
+                if (sellable.Count > 0) _log.LogInformation("{Count} item(s) can be sold now", sellable.Count);
+            }
         }
 
         try { _s.Db.SaveSnapshot(snap); }
@@ -360,6 +371,8 @@ public sealed class WatcherService : IDisposable
             Ui(() => DropsAdded?.Invoke(this, new DropsAddedEventArgs(added, showCards)));
             _ = Task.Run(() => PriceDropsAsync(added, ct), ct);
         }
+        if (sellable.Count > 0) Ui(() => NowSellable?.Invoke(this, new SellableEventArgs(sellable)));
+        _ = Task.Run(() => _s.Market.OnSnapshotAsync(snap, ct), ct);
     }
 
     private async Task PriceDropsAsync(IReadOnlyList<DropRecord> drops, CancellationToken ct)

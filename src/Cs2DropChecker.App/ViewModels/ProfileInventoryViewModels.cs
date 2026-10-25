@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Cs2DropChecker.App.Services;
+using Cs2DropChecker.App.Views;
 using Cs2DropChecker.Core.Models;
 using Cs2DropChecker.Core.Pricing;
 using Cs2DropChecker.Core.Steam;
@@ -72,9 +73,22 @@ public abstract partial class ProfileInventoryViewModel : ObservableObject
     public abstract void Tick();
 }
 
-public sealed partial class InventoryViewModel(AppServices s) : ProfileInventoryViewModel
+public sealed partial class InventoryViewModel : ProfileInventoryViewModel
 {
+    private readonly AppServices s;
     private InventorySnapshot? _shown;
+    private int _ticks;
+
+    public InventoryViewModel(AppServices services)
+    {
+        s = services;
+        s.Market.Changed += (_, _) => ApplySell();
+        Grid.TileOpened += (_, t) => OpenSell(t);
+        Grid.SellSelectedRequested += (_, tiles) => OpenBulkSell(tiles);
+    }
+
+    /// <summary>Selling needs a signed-in snapshot of the watched account and the built-in browser signed in to it.</summary>
+    [ObservableProperty] private bool _canSell;
 
     public void Refresh(bool pricesOnly)
     {
@@ -90,6 +104,7 @@ public sealed partial class InventoryViewModel(AppServices s) : ProfileInventory
             HasData = false;
             if (_shown is not null) Grid.Clear();
             _shown = null;
+            CanSell = false;
             StatusLine = w.State == WatchState.Private ? "Inventory private" : "Loading inventory…";
             return;
         }
@@ -104,6 +119,7 @@ public sealed partial class InventoryViewModel(AppServices s) : ProfileInventory
             if (!ReferenceEquals(snap, _shown)) Grid.SetItems(snap.Items, s.Prices.GetCached);
             else Grid.RefreshPrices(s.Prices.GetCached);
             _shown = snap;
+            ApplySell();
         }
         else
         {
@@ -116,6 +132,34 @@ public sealed partial class InventoryViewModel(AppServices s) : ProfileInventory
     {
         if (Snapshot is null) return;
         StatusLine = (Snapshot.SignedIn ? "Signed in · includes trade-protected items" : "Inventory public") + " · fetched " + When.Ago(Snapshot.TakenAt);
+        if (++_ticks % 15 == 0) Grid.TickSell();
+    }
+
+    private void ApplySell()
+    {
+        var snap = Snapshot;
+        var can = snap is { SignedIn: true } && snap.SteamId == s.Settings.SteamId64 && s.Market.CanSell;
+        CanSell = can;
+        Grid.SetSell(can ? s.Market.Evaluate : null, can ? s.Market.ListingFor : null);
+    }
+
+    private void OpenSell(TileViewModel tile)
+    {
+        if (!CanSell || tile.Sell is null) return;
+        SellWindow.Open(s, tile.Item, tile.Quote);
+    }
+
+    private void OpenBulkSell(IReadOnlyList<TileViewModel> tiles)
+    {
+        if (!CanSell) return;
+        var items = tiles.Where(t => t.CanCheck).Select(t => t.Item).ToList();
+        if (items.Count == 0) return;
+        if (items.Count == 1)
+        {
+            SellWindow.Open(s, items[0], tiles.First(t => t.Item == items[0]).Quote);
+            return;
+        }
+        BulkSellWindow.Open(s, items, () => Grid.ClearSelectionCommand.Execute(null));
     }
 }
 

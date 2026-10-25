@@ -1,0 +1,271 @@
+<UserControl x:Class="Cs2DropChecker.App.Views.MarketPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Cs2DropChecker.App.Controls"
+             xmlns:vm="clr-namespace:Cs2DropChecker.App.ViewModels">
+  <UserControl.Resources>
+    <Style x:Key="TrendText" TargetType="TextBlock" BasedOn="{StaticResource Cell}">
+      <Setter Property="Foreground" Value="{StaticResource Text2}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding Trend}" Value="up">
+          <Setter Property="Foreground" Value="{StaticResource Up}" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding Trend}" Value="down">
+          <Setter Property="Foreground" Value="{StaticResource Down}" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </UserControl.Resources>
+  <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+    <StackPanel Margin="24,18,24,20">
+      <Grid Margin="0,0,0,14">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <c:TrackedText Style="{StaticResource H1}" Text="Market" VerticalAlignment="Center" />
+          <c:TrackedText Style="{StaticResource MutedText}" Text="{Binding UpdatedText}" Margin="18,4,0,0" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <Button Style="{StaticResource LinkButton}" Content="Open the market on Steam" Command="{Binding OpenOnSteamCommand}" VerticalAlignment="Center" Margin="0,0,18,0" />
+          <Button Style="{StaticResource PrimaryButton}" Content="Refresh" Command="{Binding RefreshCommand}" IsEnabled="{Binding CanSell}" />
+        </StackPanel>
+      </Grid>
+
+      <!-- Not signed in -->
+      <Border Background="{StaticResource WarnBg}" BorderBrush="#59e0b04a" BorderThickness="1" Padding="16,12" Margin="0,0,0,14"
+              Visibility="{Binding CanSell, Converter={StaticResource Vis}, ConverterParameter=!}">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel>
+            <c:TrackedText Text="Sign in to Steam to sell" FontSize="13" FontWeight="SemiBold" Spacing="1.6" Foreground="{StaticResource Warn}" />
+            <TextBlock Style="{StaticResource Body}" Margin="0,5,0,0"
+                       Text="Selling, listings and your wallet need the built-in Steam sign-in for the account you watch. Sales the app already saw stay listed below." />
+          </StackPanel>
+          <Button Grid.Column="1" Style="{StaticResource GhostButton}" Content="Open Settings" VerticalAlignment="Center" Margin="16,0,0,0"
+                  Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{x:Static vm:Page.Settings}" />
+        </Grid>
+      </Border>
+
+      <TextBlock Style="{StaticResource Note}" Text="{Binding Error}" Foreground="{StaticResource Down}" FontSize="12" Margin="2,0,0,12"
+                 Visibility="{Binding Error, Converter={StaticResource Vis}}" />
+
+      <UniformGrid Columns="4" Margin="0,0,-12,0">
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="Steam Wallet" FontSize="10.5" />
+              <TextBlock Style="{StaticResource KpiValue}" Text="{Binding WalletText}" Margin="0,4,0,1" />
+              <c:TrackedText Style="{StaticResource Sub}" Text="{Binding WalletSub}" FontSize="10" />
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="On sale" FontSize="10.5" />
+              <TextBlock Style="{StaticResource KpiValue}" Text="{Binding ActiveText}" Margin="0,4,0,1" />
+              <c:TrackedText Style="{StaticResource Sub}" Text="{Binding ActiveSub}" FontSize="10" />
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="Awaiting confirmation" FontSize="10.5" />
+              <TextBlock Style="{StaticResource KpiValue}" Text="{Binding PendingText}" Margin="0,4,0,1" />
+              <c:TrackedText Style="{StaticResource Sub}" Text="{Binding PendingSub}" FontSize="10" />
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+        <c:CutBorder Style="{StaticResource HudCard}" Margin="0,0,12,0">
+          <Grid>
+            <Rectangle Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}" />
+            <StackPanel Margin="15,13,15,12">
+              <c:TrackedText Style="{StaticResource Lbl}" Text="Sold · 30 days" FontSize="10.5" />
+              <TextBlock Style="{StaticResource KpiValue}" Text="{Binding SoldText}" Margin="0,4,0,1" />
+              <c:TrackedText Text="{Binding SoldSub}" FontSize="10" Spacing="0.8">
+                <c:TrackedText.Style>
+                  <Style TargetType="c:TrackedText">
+                    <Setter Property="Foreground" Value="{StaticResource Muted}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding SoldTrend}" Value="up">
+                        <Setter Property="Foreground" Value="{StaticResource Up}" />
+                      </DataTrigger>
+                      <DataTrigger Binding="{Binding SoldTrend}" Value="down">
+                        <Setter Property="Foreground" Value="{StaticResource Down}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </c:TrackedText.Style>
+              </c:TrackedText>
+            </StackPanel>
+          </Grid>
+        </c:CutBorder>
+      </UniformGrid>
+
+      <!-- Listings -->
+      <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+        <StackPanel Margin="16,12,16,8">
+          <DockPanel Margin="0,0,0,8">
+            <c:TrackedText DockPanel.Dock="Right" Style="{StaticResource MutedText}" Text="Cancel any time. The item stays in your inventory while listed." Upper="False" />
+            <c:TrackedText Style="{StaticResource CardHead}" Text="Your listings" />
+          </DockPanel>
+          <Border BorderBrush="{StaticResource LineSoft}" BorderThickness="0,0,0,1" Height="30">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3" />
+                <ColumnDefinition Width="*" MinWidth="200" />
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="120" />
+                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="120" />
+              </Grid.ColumnDefinitions>
+              <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="Item" Margin="9,0,0,0" />
+              <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Buyer pays" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="You get" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="4" Style="{StaticResource ColHead}" Text="Listed" Margin="22,0,0,0" />
+              <c:TrackedText Grid.Column="5" Style="{StaticResource ColHead}" Text="Status" />
+            </Grid>
+          </Border>
+          <ItemsControl ItemsSource="{Binding Listings}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="{x:Type vm:ListingRowViewModel}">
+                <Border x:Name="row" BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Height="44" Background="Transparent">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="3" />
+                      <ColumnDefinition Width="*" MinWidth="200" />
+                      <ColumnDefinition Width="110" />
+                      <ColumnDefinition Width="110" />
+                      <ColumnDefinition Width="120" />
+                      <ColumnDefinition Width="140" />
+                      <ColumnDefinition Width="120" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" Margin="0,9" />
+                    <Grid Grid.Column="1" Margin="9,0,10,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <Image c:Img.DecodeWidth="96" c:Img.Icon="{Binding IconUrl}" Width="46" Height="32" Margin="0,0,10,0" Stretch="Uniform" />
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <c:TrackedText Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Spacing="0.8" Foreground="{StaticResource Text}" />
+                        <TextBlock Text="{Binding Wear}" FontSize="10.5" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" Margin="0,1,0,0" />
+                      </StackPanel>
+                    </Grid>
+                    <TextBlock Grid.Column="2" Style="{StaticResource Cell}" Text="{Binding BuyerText}" HorizontalAlignment="Right" Foreground="{StaticResource Text}" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding ReceiveText}" HorizontalAlignment="Right" Foreground="{StaticResource Up}" />
+                    <TextBlock Grid.Column="4" Style="{StaticResource Cell}" Text="{Binding ListedText}" Margin="22,0,0,0" FontSize="11.5" />
+                    <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                      <Ellipse x:Name="dot" Width="6" Height="6" Fill="{StaticResource Up}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                      <TextBlock x:Name="state" Style="{StaticResource Cell}" Text="{Binding StateText}" Foreground="{StaticResource Up}" FontSize="11.5" />
+                    </StackPanel>
+                    <Button Grid.Column="6" Style="{StaticResource DangerButton}" Content="{Binding CancelText}" Height="26" FontSize="10.5" Padding="12,0" HorizontalAlignment="Right"
+                            Command="{Binding DataContext.CancelListingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                            Visibility="{Binding DataContext.CanSell, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Vis}}" />
+                  </Grid>
+                </Border>
+                <DataTemplate.Triggers>
+                  <Trigger SourceName="row" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="row" Property="Background" Value="#0affffff" />
+                  </Trigger>
+                  <DataTrigger Binding="{Binding Pending}" Value="True">
+                    <Setter TargetName="dot" Property="Fill" Value="{StaticResource Warn}" />
+                    <Setter TargetName="state" Property="Foreground" Value="{StaticResource Warn}" />
+                  </DataTrigger>
+                  <DataTrigger Binding="{Binding Busy}" Value="True">
+                    <Setter TargetName="row" Property="Opacity" Value="0.5" />
+                  </DataTrigger>
+                </DataTemplate.Triggers>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Style="{StaticResource Note}" Margin="4,14,4,8" Visibility="{Binding HasListings, Converter={StaticResource Vis}, ConverterParameter=!}"
+                     Text="Nothing listed. Open an item on the Inventory page to sell it." />
+        </StackPanel>
+      </c:CutBorder>
+
+      <!-- Sales -->
+      <c:CutBorder Style="{StaticResource HudCard}" Margin="0,14,0,0">
+        <StackPanel Margin="16,12,16,8">
+          <DockPanel Margin="0,0,0,8">
+            <c:TrackedText DockPanel.Dock="Right" Style="{StaticResource MutedText}" Text="Profit = what you got after fees minus the item's price when it arrived" Upper="False" />
+            <c:TrackedText Style="{StaticResource CardHead}" Text="Sales" />
+          </DockPanel>
+          <Border BorderBrush="{StaticResource LineSoft}" BorderThickness="0,0,0,1" Height="30">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3" />
+                <ColumnDefinition Width="104" />
+                <ColumnDefinition Width="*" MinWidth="180" />
+                <ColumnDefinition Width="126" />
+                <ColumnDefinition Width="96" />
+                <ColumnDefinition Width="96" />
+                <ColumnDefinition Width="96" />
+                <ColumnDefinition Width="100" />
+              </Grid.ColumnDefinitions>
+              <c:TrackedText Grid.Column="1" Style="{StaticResource ColHead}" Text="Sold" Margin="9,0,0,0" />
+              <c:TrackedText Grid.Column="2" Style="{StaticResource ColHead}" Text="Item" />
+              <c:TrackedText Grid.Column="3" Style="{StaticResource ColHead}" Text="How it arrived" />
+              <c:TrackedText Grid.Column="4" Style="{StaticResource ColHead}" Text="At arrival" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="5" Style="{StaticResource ColHead}" Text="Buyer paid" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="6" Style="{StaticResource ColHead}" Text="You got" HorizontalAlignment="Right" />
+              <c:TrackedText Grid.Column="7" Style="{StaticResource ColHead}" Text="Profit" HorizontalAlignment="Right" />
+            </Grid>
+          </Border>
+          <ItemsControl ItemsSource="{Binding Sales}" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="{x:Type vm:SaleRowViewModel}">
+                <Border x:Name="row" BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Height="40" Background="Transparent">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="3" />
+                      <ColumnDefinition Width="104" />
+                      <ColumnDefinition Width="*" MinWidth="180" />
+                      <ColumnDefinition Width="126" />
+                      <ColumnDefinition Width="96" />
+                      <ColumnDefinition Width="96" />
+                      <ColumnDefinition Width="96" />
+                      <ColumnDefinition Width="100" />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Fill="{Binding RarityHex, Converter={StaticResource HexBrush}}" Margin="0,8" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource Cell}" Text="{Binding When}" Margin="9,0,0,0" FontSize="11.5" />
+                    <Grid Grid.Column="2" Margin="0,0,10,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <Image c:Img.DecodeWidth="96" c:Img.Icon="{Binding IconUrl}" Width="42" Height="30" Margin="0,0,10,0" Stretch="Uniform" />
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <c:TrackedText Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Spacing="0.8" Foreground="{StaticResource Text}" />
+                        <TextBlock Text="{Binding Wear}" FontSize="10.5" Foreground="{StaticResource Dim}" TextTrimming="CharacterEllipsis" Margin="0,1,0,0" />
+                      </StackPanel>
+                    </Grid>
+                    <TextBlock Grid.Column="3" Style="{StaticResource Cell}" Text="{Binding How}" FontSize="11.5" />
+                    <TextBlock Grid.Column="4" Style="{StaticResource Cell}" Text="{Binding ArrivalText}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="5" Style="{StaticResource Cell}" Text="{Binding BuyerText}" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="6" Style="{StaticResource Cell}" Text="{Binding ReceiveText}" HorizontalAlignment="Right" Foreground="{StaticResource Text}" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="7" Style="{StaticResource TrendText}" Text="{Binding ProfitText}" HorizontalAlignment="Right" />
+                  </Grid>
+                </Border>
+                <DataTemplate.Triggers>
+                  <Trigger SourceName="row" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="row" Property="Background" Value="#0affffff" />
+                  </Trigger>
+                </DataTemplate.Triggers>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Style="{StaticResource Note}" Margin="4,14,4,8" Visibility="{Binding HasSales, Converter={StaticResource Vis}, ConverterParameter=!}"
+                     Text="No sales yet. When a listing sells, the app records it here with what you got and how it compares to the item's price when it arrived." />
+        </StackPanel>
+      </c:CutBorder>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

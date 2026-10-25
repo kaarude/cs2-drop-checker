@@ -113,6 +113,10 @@
           <Setter TargetName="warnIco" Property="Stroke" Value="#8fb8ff" />
           <Setter TargetName="warnText" Property="Foreground" Value="#8fb8ff" />
         </DataTrigger>
+        <DataTrigger Binding="{Binding WarnGood}" Value="True">
+          <Setter TargetName="warnIco" Property="Stroke" Value="#8fd19a" />
+          <Setter TargetName="warnText" Property="Foreground" Value="#8fd19a" />
+        </DataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>
 
