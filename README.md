@@ -70,7 +70,7 @@ Steam keeps a fee from each sale (5% Steam, 10% CS2). The price the app shows as
 - **Overview:** inventory value over time, case profit/loss, best drop, weekly drop count and recent drops (price when it arrived vs. now).
 - **Drops:** the full history, filtered by drops, openings, trade-ups or purchases. Click a row for selling options.
 - **Profit / Loss:** what your case openings cost and returned.
-- **Inventory:** the current inventory with prices. With sign-in, also the sell filter and selling.
+- **Inventory:** the current inventory with prices and where each item sells for most. With sign-in, also the sell filter and selling.
 - **Market:** your Steam Wallet, your listings (cancel any of them) and your sales, with the profit compared to each item's price when it arrived.
 - **Friends:** a weekly leaderboard with friends.
 - **Alerts:** price alerts for items and for your inventory total.
@@ -93,7 +93,7 @@ Every case or capsule opening is stored with its cost at that moment (case price
 
 ### Best place to sell
 
-Click an item on the Drops or Inventory page to see what you'd actually get on each market after fees, with the best one highlighted ("Sell on Skinport, +£3.20 vs Steam"). All fees are in one place, `SellFees` in `src/Cs2DropChecker.Core/Selling/Selling.cs`:
+See what you'd actually get on each market after fees, with the best one highlighted ("Sell on Skinport, +£3.20 vs Steam"). It is in the sell window when you click a sellable Inventory item, and in the item details panel when you click a row on the Drops page, an item you can't list from the app (not signed in, not marketable) or an item on the Lookup page. All fees are in one place, `SellFees` in `src/Cs2DropChecker.Core/Selling/Selling.cs`. The sell window uses the same Steam fee calculation, with your wallet's own fee rates when Steam sends them:
 
 | Market | Fee | Paid out as |
 | --- | --- | --- |
