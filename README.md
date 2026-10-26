@@ -67,8 +67,8 @@ Steam keeps a fee from each sale (5% Steam, 10% CS2). The price the app shows as
 
 ## Pages
 
-- **Overview:** inventory value over time, case profit/loss, best drop, weekly drop count and recent drops (price when it arrived vs. now).
-- **Drops:** the full history, filtered by drops, openings, trade-ups or purchases. Click a row for selling options.
+- **Overview:** inventory value and its change over the last 24 hours, value over time, case profit/loss, best drop, weekly drop count with this week's status and your streak, and recent drops (price when it arrived vs. now).
+- **Drops:** the full history, filtered by drops, openings, trade-ups or purchases. Click a row for selling options. **Export CSV** saves the rows shown (current filter and search) for Excel or Google Sheets.
 - **Profit / Loss:** what your case openings cost and returned.
 - **Inventory:** the current inventory with prices and where each item sells for most. With sign-in, also the sell filter and selling.
 - **Market:** your Steam Wallet, your listings (cancel any of them) and your sales, with the profit compared to each item's price when it arrived.
@@ -128,7 +128,7 @@ Alerts for an item (moves by ±X%, rises to or falls to a price) or for the inve
 
 ### Weekly drop reminder
 
-CS2 weekly drops reset every Wednesday at 01:00 UTC. If this week's weekly drop hasn't arrived by the day and time you choose (default Sunday 19:00), the app shows one Windows notification and, optionally, an overlay card. Turn it off in Settings > Weekly drop reminder.
+CS2 weekly drops reset every Wednesday at 01:00 UTC. The Overview shows whether this week's drop is in, the time to the next reset and how many weeks in a row you've had one. If this week's weekly drop hasn't arrived by the day and time you choose (default Sunday 19:00), the app shows one Windows notification and, optionally, an overlay card. Turn it off in Settings > Weekly drop reminder.
 
 ### What needs the Steam sign-in
 

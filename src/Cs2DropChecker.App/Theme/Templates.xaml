@@ -305,6 +305,9 @@
       <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="down">
         <Setter Property="Foreground" Value="{StaticResource Down}" />
       </DataTrigger>
+      <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="warn">
+        <Setter Property="Foreground" Value="{StaticResource Warn}" />
+      </DataTrigger>
     </Style.Triggers>
   </Style>
 

@@ -3,9 +3,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Cs2DropChecker.App.Services;
 using Cs2DropChecker.App.Views;
+using Cs2DropChecker.Core.Export;
 using Cs2DropChecker.Core.Models;
 using Cs2DropChecker.Core.Pricing;
 using Cs2DropChecker.Core.Util;
+using Microsoft.Extensions.Logging;
 
 namespace Cs2DropChecker.App.ViewModels;
 
@@ -231,6 +233,58 @@ public sealed partial class MainViewModel : ObservableObject
         }
         Page = Page.Drops;
         Drops.SelectedRow = Drops.Rows.FirstOrDefault(r => r.Id == row.Id) ?? row;
+    }
+
+    /// <summary>Saves the rows the Drops page shows (current filter and search) as CSV.</summary>
+    [RelayCommand]
+    private void ExportDrops()
+    {
+        var rows = Drops.Rows;
+        if (rows.Count == 0)
+        {
+            ShowFlash("No drops to export", "warn");
+            return;
+        }
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export drops",
+            FileName = DropsCsv.FileName(DateTimeOffset.UtcNow),
+            DefaultExt = ".csv",
+            AddExtension = true,
+            Filter = "CSV file (*.csv)|*.csv",
+        };
+        if (dialog.ShowDialog() != true) return;
+        try
+        {
+            var csv = DropsCsv.Write(rows.Select(r => r.Record), _s.Prices.GetCached);
+            // The BOM makes Excel read the file as UTF-8, so ★ and ™ survive.
+            System.IO.File.WriteAllText(dialog.FileName, csv, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+            ShowFlash($"Exported {rows.Count} item{(rows.Count == 1 ? "" : "s")} to {System.IO.Path.GetFileName(dialog.FileName)}", "ok");
+        }
+        catch (Exception ex)
+        {
+            _s.Log.LogWarning("Drops export failed: {Message}", ex.Message);
+            ShowFlash("Export failed: " + ex.Message, "warn");
+        }
+    }
+
+    /// <summary>Closes the item details panel of the current page. Returns false when none is open.</summary>
+    public bool DismissDetails()
+    {
+        switch (Page)
+        {
+            case Page.Drops when Drops.SelectedRow is not null:
+                Drops.SelectedRow = null;
+                return true;
+            case Page.Inventory when Inventory.Details is not null:
+                Inventory.Details = null;
+                return true;
+            case Page.Lookup when Lookup.Details is not null:
+                Lookup.Details = null;
+                return true;
+            default:
+                return false;
+        }
     }
 
     [RelayCommand]

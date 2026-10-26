@@ -7,6 +7,7 @@ using Cs2DropChecker.App.Services;
 using Cs2DropChecker.Core.Models;
 using Cs2DropChecker.Core.Pricing;
 using Cs2DropChecker.Core.Storage;
+using Cs2DropChecker.Core.Weekly;
 
 namespace Cs2DropChecker.App.ViewModels;
 
@@ -16,6 +17,11 @@ public sealed partial class OverviewViewModel(AppServices s) : ObservableObject
 
     [ObservableProperty] private string _valueText = "—";
     [ObservableProperty] private string _valueSub = "Waiting for the first check";
+    [ObservableProperty] private string _valueChange = "";
+    [ObservableProperty] private string _valueChangeTrend = "";
+    [ObservableProperty] private string _weeklyStatus = "";
+    [ObservableProperty] private string _weeklyStatusKind = "";
+    [ObservableProperty] private string _weeklyStatusTip = "";
     [ObservableProperty] private string _newCount = "0";
     [ObservableProperty] private string _newSub = "";
     [ObservableProperty] private string _bestName = "—";
@@ -78,6 +84,7 @@ public sealed partial class OverviewViewModel(AppServices s) : ObservableObject
             BestName = "—";
             BestSub = "No drops yet";
             BestStar = false;
+            WeeklyStatus = WeeklyStatusTip = WeeklyStatusKind = "";
             RefreshValue();
             ReloadChart();
             ReloadProfit();
@@ -114,6 +121,7 @@ public sealed partial class OverviewViewModel(AppServices s) : ObservableObject
         var weekly = _drops.Where(d => d.Kind == ArrivalKind.WeeklyDrop && d.SeenAt.ToLocalTime().Year == year).ToList();
         WeeklyCount = weekly.Count.ToString(CultureInfo.InvariantCulture);
         WeeklySub = weekly.Count == 0 ? "Play CS2 to earn them" : Money.Format(SumAtDrop(weekly, cur), cur) + " total value";
+        UpdateWeeklyStatus();
 
         foreach (var d in _drops.Take(8)) Recent.Add(new DropRowViewModel(d, s.Prices.GetCached(d.Item.MarketHashName)));
         RefreshValue();
@@ -138,12 +146,59 @@ public sealed partial class OverviewViewModel(AppServices s) : ObservableObject
             ValueText = Money.Format(v.Total, s.Settings.Currency);
             ValueSub = $"{v.PricedCount} of {v.ItemCount} items priced";
         }
+        UpdateValueChange();
         foreach (var r in Recent) r.SetNow(s.Prices.GetCached(r.Record.Item.MarketHashName));
         if (w.LastSuccessAt is { } last && (Points.Count == 0 || last > Points[^1].At)) ReloadChart();
     }
 
+    /// <summary>Change against the last value point from at least 24 hours ago, in the current currency.</summary>
+    private void UpdateValueChange()
+    {
+        var w = s.Watcher;
+        var id = s.Settings.SteamId64;
+        var cur = s.Settings.Currency;
+        ValueChange = ValueChangeTrend = "";
+        // Same coverage rule as the value history, so a half-priced total right after start-up isn't shown as a crash.
+        if (id == 0 || w.Current is null || w.Value.ItemCount == 0 || w.Value.PricedCount < w.Value.ItemCount * 0.4) return;
+        ValuePoint? then;
+        try { then = s.Db.GetLastValuePoint(id, cur, DateTimeOffset.UtcNow.AddHours(-24)); }
+        catch (Exception) { return; }
+        if (then is null || then.Total <= 0) return;
+        var delta = w.Value.Total - then.Total;
+        var pct = delta / then.Total * 100m;
+        var sign = delta > 0 ? "+" : delta < 0 ? "-" : "±";
+        ValueChange = $"{sign}{Money.Format(Math.Abs(delta), cur)} ({sign}{Math.Abs(pct).ToString("0.0", CultureInfo.InvariantCulture)}%) · 24 h";
+        ValueChangeTrend = ProfitFigures.Trend(Math.Round(delta, 2));
+    }
+
+    private void UpdateWeeklyStatus()
+    {
+        if (s.Settings.SteamId64 == 0)
+        {
+            WeeklyStatus = WeeklyStatusTip = WeeklyStatusKind = "";
+            return;
+        }
+        var now = DateTimeOffset.UtcNow;
+        var st = WeeklyStreak.Compute(_drops, now);
+        var left = When.Left(st.NextReset - now);
+        var streak = st.Streak >= 2 ? $" · {st.Streak}-week streak" : "";
+        if (st.ThisWeek)
+        {
+            WeeklyStatus = "This week's drop is in" + streak;
+            WeeklyStatusKind = "up";
+        }
+        else
+        {
+            WeeklyStatus = st.AtRisk && st.Streak >= 2 ? $"No drop yet · {st.Streak}-week streak at risk" : $"Not yet this week · resets in {left}";
+            WeeklyStatusKind = "warn";
+        }
+        WeeklyStatusTip = $"CS2 weekly drops reset every Wednesday at 01:00 UTC. Next reset in {left}: {When.Format(st.NextReset)} {st.NextReset.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture)}."
+            + (st.Streak >= 2 ? $" You've had a weekly drop {st.Streak} weeks in a row." : "");
+    }
+
     public void RefreshWhen()
     {
+        UpdateWeeklyStatus();
         if (Recent.Count == 0) return;
         var rows = Recent.ToList();
         Recent.Clear();
