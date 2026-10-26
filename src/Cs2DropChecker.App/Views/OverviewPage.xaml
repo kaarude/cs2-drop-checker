@@ -24,6 +24,9 @@
               <c:TrackedText Style="{StaticResource Lbl}" Text="Inventory value" FontSize="10.5" />
               <TextBlock Style="{StaticResource KpiValue}" Text="{Binding ValueText}" Margin="0,4,0,1" />
               <c:TrackedText Style="{StaticResource Sub}" Text="{Binding ValueSub}" FontSize="10" />
+              <TextBlock Style="{StaticResource TrendValue}" Tag="{Binding ValueChangeTrend}" Text="{Binding ValueChange}" FontSize="10.5" FontWeight="SemiBold" Margin="0,3,0,0"
+                         TextTrimming="CharacterEllipsis" ToolTip="Compared with the inventory value 24 hours ago"
+                         Visibility="{Binding ValueChange, Converter={StaticResource Vis}}" />
             </StackPanel>
           </Grid>
         </c:CutBorder>
@@ -56,6 +59,9 @@
               <c:TrackedText Style="{StaticResource Lbl}" Text="{Binding WeeklyLabel}" FontSize="10.5" />
               <TextBlock Style="{StaticResource KpiValue}" Text="{Binding WeeklyCount}" Margin="0,4,0,1" />
               <c:TrackedText Style="{StaticResource Sub}" Text="{Binding WeeklySub}" FontSize="10" />
+              <TextBlock Style="{StaticResource TrendValue}" Tag="{Binding WeeklyStatusKind}" Text="{Binding WeeklyStatus}" FontSize="10.5" FontWeight="SemiBold" Margin="0,3,0,0"
+                         TextTrimming="CharacterEllipsis" ToolTip="{Binding WeeklyStatusTip}"
+                         Visibility="{Binding WeeklyStatus, Converter={StaticResource Vis}}" />
             </StackPanel>
           </Grid>
         </c:CutBorder>

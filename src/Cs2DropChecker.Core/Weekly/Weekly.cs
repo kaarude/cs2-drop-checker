@@ -24,6 +24,26 @@ public static class Cs2Week
     public static DateTimeOffset NextReset(DateTimeOffset now) => Start(now).AddDays(7);
 }
 
+/// <summary>Whether this CS2 week's drop has arrived and how many weeks in a row had one.</summary>
+/// <param name="Streak">Consecutive CS2 weeks with a weekly drop, ending with this week or, while this week has none yet, the last one.</param>
+/// <param name="AtRisk">This week has no drop yet but the streak is still alive.</param>
+public readonly record struct WeeklyStatus(bool ThisWeek, int Streak, bool AtRisk, DateTimeOffset NextReset);
+
+public static class WeeklyStreak
+{
+    public static WeeklyStatus Compute(IEnumerable<DropRecord> drops, DateTimeOffset now)
+    {
+        var weeks = drops.Where(d => d.Kind == ArrivalKind.WeeklyDrop && d.SeenAt <= now)
+            .Select(d => Cs2Week.Start(d.SeenAt))
+            .ToHashSet();
+        var start = Cs2Week.Start(now);
+        var thisWeek = weeks.Contains(start);
+        var streak = 0;
+        for (var w = thisWeek ? start : start.AddDays(-7); weeks.Contains(w); w = w.AddDays(-7)) streak++;
+        return new WeeklyStatus(thisWeek, streak, !thisWeek && streak > 0, start.AddDays(7));
+    }
+}
+
 public static class WeeklyReminder
 {
     public static bool HasWeeklyDrop(IEnumerable<DropRecord> drops, DateTimeOffset now)

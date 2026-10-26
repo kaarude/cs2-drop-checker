@@ -13,6 +13,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         StateChanged += (_, _) => UpdateFrame();
         PreviewKeyDown += OnPreviewKeyDown;
+        KeyDown += OnKeyDown;
     }
 
     private MainViewModel? Vm => DataContext as MainViewModel;
@@ -37,6 +38,12 @@ public partial class MainWindow : Window
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (Vm is { } vm && vm.Page == Page.Settings && vm.Settings.HandleKey(e)) e.Handled = true;
+    }
+
+    // Bubbling, so an open combo box or the hotkey recorder gets Escape first.
+    private void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && Vm?.DismissDetails() == true) e.Handled = true;
     }
 
     private void OnMinimize(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;

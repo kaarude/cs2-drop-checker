@@ -13,6 +13,9 @@
         <c:TrackedText Style="{StaticResource MutedText}" Text="{Binding Summary}" Margin="18,4,0,0" />
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button Style="{StaticResource GhostButton}" Content="Export CSV" Height="32" Margin="0,0,10,0"
+              ToolTip="Save the rows shown below (current filter and search) as a CSV file for Excel or Google Sheets"
+              Command="{Binding DataContext.ExportDropsCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
       <Button Style="{StaticResource GhostButton}" Content="Share last drop" Height="32" Margin="0,0,10,0"
               ToolTip="Copy a card of your newest drop to the clipboard and save it as PNG"
               Command="{Binding DataContext.ShareLastDropCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
