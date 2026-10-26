@@ -14,6 +14,9 @@ public sealed record AlertKindOption(AlertKind Kind, string Label, bool NeedsIte
     public override string ToString() => Label;
 }
 
+/// <summary>An item found by name in the price lists; <see cref="Owned"/> when it is also in the watched inventory.</summary>
+public sealed record ItemSearchHit(string MarketHashName, string PriceText, bool Owned);
+
 public sealed partial class AlertRow : ObservableObject
 {
     private readonly Action<AlertRow, bool> _onEnabled;
@@ -73,6 +76,7 @@ public sealed partial class AlertsViewModel : ObservableObject
 
     public ObservableCollection<Option> Items { get; } = new();
     public ObservableCollection<AlertRow> Rows { get; } = new();
+    public ObservableCollection<ItemSearchHit> SearchResults { get; } = new();
 
     [ObservableProperty] private AlertKindOption _kind;
     [ObservableProperty] private Option? _item;
@@ -80,6 +84,8 @@ public sealed partial class AlertsViewModel : ObservableObject
     [ObservableProperty] private string _message = "";
     [ObservableProperty] private string _messageKind = "";
     [ObservableProperty] private string _delivery = "";
+    [ObservableProperty] private string _search = "";
+    [ObservableProperty] private string _searchNote = "";
 
     public bool NeedsItem => Kind.NeedsItem;
     public string AmountLabel => Kind.IsPercent ? "Percent" : $"Price ({Currencies.Get(_s.Settings.Currency).Symbol.Trim()})";
@@ -92,6 +98,51 @@ public sealed partial class AlertsViewModel : ObservableObject
     }
 
     partial void OnItemChanged(Option? value) => SuggestAmount();
+
+    partial void OnSearchChanged(string value) => RunSearch();
+
+    private void RunSearch()
+    {
+        SearchResults.Clear();
+        var q = Search.Trim();
+        if (q.Length < 2)
+        {
+            SearchNote = "";
+            return;
+        }
+        var owned = (_s.Watcher.Current?.Items ?? []).Select(i => i.MarketHashName).ToHashSet(StringComparer.Ordinal);
+        foreach (var name in _s.Prices.Search(q, 8))
+        {
+            var p = _s.Prices.GetCached(name);
+            SearchResults.Add(new ItemSearchHit(name, p is null ? "no price" : Money.Format(p), owned.Contains(name)));
+        }
+        SearchNote = SearchResults.Count > 0 ? ""
+            : _s.Prices.Feed.Count == 0 && _s.Prices.Skinport.LastUpdated is null ? "The price lists are still loading. Try again in a moment."
+            : "No item matches. Use the market name, for example \"AK-47 Redline Field-Tested\".";
+    }
+
+    /// <summary>Selects a search result as the alert's item, whether or not it is in the inventory.</summary>
+    [RelayCommand]
+    private void PickSearchResult(ItemSearchHit hit)
+    {
+        var opt = Items.FirstOrDefault(o => (string)o.Value == hit.MarketHashName);
+        if (opt is null)
+        {
+            opt = new Option(hit.MarketHashName, hit.MarketHashName + " · " + hit.PriceText);
+            Items.Insert(0, opt);
+        }
+        if (!Kind.NeedsItem) Kind = Kinds[0];
+        Item = opt;
+        Search = "";
+        Message = "";
+    }
+
+    /// <summary>Called when the user leaves the Alerts page, so old form messages don't greet them on the way back.</summary>
+    public void OnHidden()
+    {
+        Message = "";
+        Search = "";
+    }
 
     private void SuggestAmount()
     {
@@ -111,7 +162,8 @@ public sealed partial class AlertsViewModel : ObservableObject
             + " · change in Settings. Checked whenever prices refresh.";
         OnPropertyChanged(nameof(AmountLabel));
 
-        var selected = Item?.Value as string;
+        var previous = Item;
+        var selected = previous?.Value as string;
         Items.Clear();
         var items = _s.Watcher.Current?.Items ?? [];
         foreach (var g in items.Where(i => i.Marketable || i.Tradable || i.IsContainer).GroupBy(i => i.MarketHashName)
@@ -121,7 +173,15 @@ public sealed partial class AlertsViewModel : ObservableObject
             var label = g.Item.Name + (g.Count > 1 ? $" ×{g.Count}" : "") + (g.Price is { } p ? " · " + Money.Format(p) : "");
             Items.Add(new Option(g.Item.MarketHashName, label));
         }
-        if (selected is not null) Item = Items.FirstOrDefault(o => (string)o.Value == selected) ?? Item;
+        if (selected is not null)
+        {
+            var match = Items.FirstOrDefault(o => (string)o.Value == selected);
+            // Items picked from search or the Lookup page are not in the inventory list; keep them selectable.
+            if (match is null && previous is not null) Items.Insert(0, match = previous);
+            Item = match;
+        }
+        // The combo box binds one way, so it needs a nudge after Items.Clear() dropped its selection.
+        OnPropertyChanged(nameof(Item));
 
         List<AlertRule> rules;
         try { rules = _s.Db.GetAlerts(); }

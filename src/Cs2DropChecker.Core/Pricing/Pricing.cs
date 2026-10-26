@@ -297,6 +297,7 @@ public sealed class CsgoTraderSteamSource(HttpClient http, FxService fx, string 
     public string DisplayName => "Steam 24 h median, full list";
     public DateTimeOffset? LastUpdated { get; private set; }
     public int Count => _usd.Count;
+    public IEnumerable<string> Names => _usd.Keys;
 
     public async Task RefreshIfStaleAsync(string currency, CancellationToken ct)
     {
@@ -371,6 +372,7 @@ public sealed class SkinportSource(HttpClient brotliHttp, string cacheDir) : IBu
     public string Id => PriceSourceIds.Skinport;
     public string DisplayName => "Skinport";
     public DateTimeOffset? LastUpdated { get; private set; }
+    public IEnumerable<string> Names => _prices.Keys;
 
     private string FileFor(string currency) => Path.Combine(cacheDir, $"skinport_{currency}.json");
 
@@ -512,4 +514,30 @@ public sealed class PriceService(
     }
 
     public void RaiseUpdated() => PricesUpdated?.Invoke(this, EventArgs.Empty);
+
+    /// <summary>Item names from the bulk price lists that match <paramref name="query"/>; see <see cref="ItemSearch.Find"/>.</summary>
+    public List<string> Search(string query, int max) => ItemSearch.Find(feed.Names.Concat(skinport.Names), query, max);
+}
+
+/// <summary>Finds items by name in the full price lists, so alerts can watch items outside the inventory.</summary>
+public static class ItemSearch
+{
+    /// <summary>
+    /// Every word of <paramref name="query"/> must appear in the name, in any order and case. Names that start with the
+    /// query come first, then shorter names, so "ak redline" lists the plain wears before StatTrak and Souvenir.
+    /// </summary>
+    public static List<string> Find(IEnumerable<string> names, string query, int max)
+    {
+        var words = query.Split((char[])[' ', '|'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (words.Length == 0 || max <= 0) return [];
+        var q = query.Trim();
+        return names
+            .Where(n => words.All(w => n.Contains(w, StringComparison.OrdinalIgnoreCase)))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(n => n.StartsWith(q, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .ThenBy(n => n.Length)
+            .ThenBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .Take(max)
+            .ToList();
+    }
 }

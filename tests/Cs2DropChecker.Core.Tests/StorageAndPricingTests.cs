@@ -98,6 +98,42 @@ public sealed class StorageAndPricingTests : IDisposable
     }
 
     [Fact]
+    public void Item_search_matches_every_word_and_ranks_prefix_then_short_names()
+    {
+        string[] names =
+        [
+            "StatTrak™ AK-47 | Redline (Field-Tested)",
+            "AK-47 | Redline (Minimal Wear)",
+            "AK-47 | Redline (Field-Tested)",
+            "Souvenir AWP | Redline (Field-Tested)",
+            "AK-47 | Slate (Field-Tested)",
+        ];
+        Assert.Equal(
+            ["AK-47 | Redline (Field-Tested)", "AK-47 | Redline (Minimal Wear)", "StatTrak™ AK-47 | Redline (Field-Tested)"],
+            ItemSearch.Find(names, "ak-47 redline", 10));
+        Assert.Equal(["AK-47 | Redline (Field-Tested)"], ItemSearch.Find(names, "AK-47 | Redline (Field", 1));
+        Assert.Empty(ItemSearch.Find(names, "  | ", 10));
+        Assert.Empty(ItemSearch.Find(names, "karambit", 10));
+    }
+
+    [Fact]
+    public void Price_service_searches_both_price_lists_without_duplicates()
+    {
+        var settings = new AppSettings { Currency = "EUR" };
+        var http = new HttpClient();
+        var fx = new FxService(http, _dir);
+        fx.SetRates(new Dictionary<string, decimal> { ["EUR"] = 0.9m });
+        var feed = new CsgoTraderSteamSource(http, fx, _dir);
+        feed.SetPrices(new Dictionary<string, decimal> { ["AWP | Asiimov (Field-Tested)"] = 100m, ["Glock-18 | Fade (Factory New)"] = 1000m });
+        var skinport = new SkinportSource(http, _dir);
+        skinport.SetPrices("EUR", new Dictionary<string, decimal> { ["AWP | Asiimov (Field-Tested)"] = 85m, ["AWP | Asiimov (Battle-Scarred)"] = 60m });
+        var svc = new PriceService(new SteamLivePriceSource(http), feed, skinport, fx, () => settings);
+
+        Assert.Equal(["AWP | Asiimov (Field-Tested)", "AWP | Asiimov (Battle-Scarred)"], svc.Search("asiimov awp", 5));
+        var onlyOnSkinport = Assert.Single(svc.Search("asiimov battle", 5));
+        Assert.Equal(60m, svc.GetCached(onlyOnSkinport)!.Price);
+    }
+    [Fact]
     public void Feed_parsers_pick_the_right_fields()
     {
         var feed = CsgoTraderSteamSource.Parse("""{"A":{"last_24h":null,"last_7d":1.5},"B":{"last_24h":2.25},"C":{"last_24h":null},"D":5}""");
