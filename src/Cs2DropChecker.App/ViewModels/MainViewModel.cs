@@ -128,6 +128,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (oldValue == Page.Lookup && newValue != Page.Lookup) Lookup.Clear();
         if (oldValue == Page.Settings && newValue != Page.Settings) Settings.CancelRecording();
         if (oldValue == Page.Market && newValue != Page.Market) Market.OnHidden();
+        if (oldValue == Page.Alerts && newValue != Page.Alerts) Alerts.OnHidden();
         Current = newValue switch
         {
             Page.Drops => Drops,

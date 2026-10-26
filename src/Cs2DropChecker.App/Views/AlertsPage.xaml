@@ -2,7 +2,26 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:Cs2DropChecker.App.Controls">
-  <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+  <UserControl.Resources>
+    <Style x:Key="SearchHit" TargetType="Button">
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bd" Background="Transparent" BorderBrush="{StaticResource LineFaint}" BorderThickness="0,0,0,1" Padding="10,6">
+              <ContentPresenter />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="{StaticResource Hover}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Resources>  <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
     <StackPanel Margin="24,18,24,20">
       <Grid Margin="0,0,0,14">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -15,7 +34,7 @@
         <StackPanel Margin="16,12,16,14">
           <c:TrackedText Style="{StaticResource CardHead}" Text="New alert" />
           <TextBlock Style="{StaticResource Note}" Margin="0,4,0,12"
-                     Text="Each alert fires once when its threshold is crossed, then waits until you reset it or the price moves back. Percent alerts on items measure from the price when you add them." />
+                     Text="Each alert fires once when its threshold is crossed, then waits until you reset it or the price moves back. Percent alerts on items measure from the price when you add them. Pick an item from your inventory, or search any CS2 item to watch skins you want to buy." />
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="260" />
@@ -26,14 +45,17 @@
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto" />
               <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <c:TrackedText Style="{StaticResource Lbl}" Text="When" FontSize="10" Margin="0,0,0,4" />
             <c:TrackedText Grid.Column="1" Style="{StaticResource Lbl}" Text="Item" FontSize="10" Margin="12,0,0,4" Visibility="{Binding NeedsItem, Converter={StaticResource Vis}}" />
             <c:TrackedText Grid.Column="2" Style="{StaticResource Lbl}" Text="{Binding AmountLabel}" FontSize="10" Margin="12,0,0,4" />
-            <ComboBox Grid.Row="1" Style="{StaticResource HudCombo}" Height="32" ItemsSource="{Binding Kinds}" SelectedItem="{Binding Kind}" />
-            <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource HudCombo}" Height="32" Margin="12,0,0,0" ItemsSource="{Binding Items}" SelectedItem="{Binding Item}"
-                      Visibility="{Binding NeedsItem, Converter={StaticResource Vis}}" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Note}" Margin="12,0,0,0" VerticalAlignment="Center"
+            <!-- SelectedItem binds one way: a two-way binding pushed null back while the page was being swapped out and broke navigation. -->
+            <ComboBox Grid.Row="1" Style="{StaticResource HudCombo}" Height="32" ItemsSource="{Binding Kinds}" SelectedItem="{Binding Kind, Mode=OneWay}"
+                      SelectionChanged="OnKindPicked" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource HudCombo}" Height="32" Margin="12,0,0,0" ItemsSource="{Binding Items}" SelectedItem="{Binding Item, Mode=OneWay}"
+                      SelectionChanged="OnItemPicked" Visibility="{Binding NeedsItem, Converter={StaticResource Vis}}" />            <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource Note}" Margin="12,0,0,0" VerticalAlignment="Center"
                        Visibility="{Binding NeedsItem, Converter={StaticResource Vis}, ConverterParameter=!}"
                        Text="Uses the total value of the watched inventory." />
             <TextBox Grid.Row="1" Grid.Column="2" Style="{StaticResource HudTextBox}" Margin="12,0,0,0" Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged}">
@@ -42,7 +64,33 @@
               </TextBox.InputBindings>
             </TextBox>
             <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource PrimaryButton}" Content="Add alert" Margin="12,0,0,0" Command="{Binding AddCommand}" />
-          </Grid>
+            <TextBox Grid.Row="2" Grid.Column="1" Style="{StaticResource HudTextBox}" Margin="12,8,0,0" FontSize="12.5"
+                     Tag="Or search any CS2 item, also ones you don't own"
+                     Visibility="{Binding NeedsItem, Converter={StaticResource Vis}}"
+                     Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+            <StackPanel Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="12,0,0,0" Visibility="{Binding NeedsItem, Converter={StaticResource Vis}}">
+              <ItemsControl ItemsSource="{Binding SearchResults}" Focusable="False" Background="{StaticResource Field}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Style="{StaticResource SearchHit}" CommandParameter="{Binding}"
+                            Command="{Binding DataContext.PickSearchResultCommand, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="*" />
+                          <ColumnDefinition Width="Auto" />
+                          <ColumnDefinition Width="90" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding MarketHashName}" FontSize="12" Foreground="{StaticResource Text}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="in inventory" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="10,0,0,0" VerticalAlignment="Center"
+                                   Visibility="{Binding Owned, Converter={StaticResource Vis}}" />
+                        <TextBlock Grid.Column="2" Text="{Binding PriceText}" FontSize="12" Foreground="{StaticResource Gold}" HorizontalAlignment="Right" />
+                      </Grid>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Style="{StaticResource Note}" Text="{Binding SearchNote}" Margin="0,6,0,0" Visibility="{Binding SearchNote, Converter={StaticResource Vis}}" />
+            </StackPanel>          </Grid>
           <TextBlock Style="{StaticResource StatusText}" Tag="{Binding MessageKind}" Text="{Binding Message}" Margin="0,10,0,0" FontSize="11.5"
                      Visibility="{Binding Message, Converter={StaticResource Vis}}" />
         </StackPanel>
@@ -87,7 +135,7 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
           <TextBlock Style="{StaticResource Note}" Margin="2,8,0,4" Visibility="{Binding Rows.Count, Converter={StaticResource Vis}, ConverterParameter=!}"
-                     Text="No alerts yet. Add one above, or open an item on the Inventory or Drops page and choose Price alert." />
+                     Text="No alerts yet. Add one above (search to watch items you don't own), or open an item on the Inventory or Drops page and choose Price alert." />
         </StackPanel>
       </c:CutBorder>
     </StackPanel>
